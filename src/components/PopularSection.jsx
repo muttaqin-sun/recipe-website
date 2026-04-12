@@ -6,7 +6,7 @@ const PopularSection = ({ recipes }) => {
   const popularRecipes = [...recipes]
     .filter(recipe => recipe.category !== 'Minuman')
     .sort((a, b) => b.rating - a.rating)
-    .slice(0, 4);
+    .slice(0, 6);
 
   return (
     <section className="popular-section" id="populer">

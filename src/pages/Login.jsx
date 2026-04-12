@@ -1,9 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Utensils, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -11,8 +16,19 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // Simulate login and redirect to home
-    navigate('/');
+    setError('');
+    
+    const loggedUser = login(email, password);
+    
+    if (loggedUser) {
+      if (loggedUser.role === 'admin') {
+        navigate('/dashboard/admin');
+      } else {
+        navigate('/dashboard/user');
+      }
+    } else {
+      setError('Kredensial tidak cocok. Gunakan admin@rasanusantara.id (admin) atau user@email.com (user).');
+    }
   };
 
   return (
@@ -27,18 +43,34 @@ const Login = () => {
               Rasa Nusantara
             </Link>
             <h2>Selamat Datang Kembali</h2>
-            <p>Silakan masuk ke akun Anda untuk menyimpan resep favorit.</p>
+            <p>Silakan masuk ke akun Anda untuk manajemen resep.</p>
           </div>
 
           <form className="login-form" onSubmit={handleLogin}>
+            {error && <div className="error-message" style={{color: 'red', marginBottom: '16px', fontSize: '0.9rem'}}>{error}</div>}
+            
             <div className="form-group">
               <label htmlFor="email">Email</label>
-              <input type="email" id="email" placeholder="contoh@email.com" required />
+              <input 
+                type="email" 
+                id="email" 
+                placeholder="contoh@email.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required 
+              />
             </div>
             
             <div className="form-group">
               <label htmlFor="password">Kata Sandi</label>
-              <input type="password" id="password" placeholder="Masukkan kata sandi" required />
+              <input 
+                type="password" 
+                id="password" 
+                placeholder="Masukkan kata sandi" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required 
+              />
             </div>
 
             <div className="form-options">

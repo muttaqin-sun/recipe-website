@@ -5,6 +5,8 @@ import RecipeDetail from './pages/RecipeDetail';
 import ArticleDetail from './pages/ArticleDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import UserDashboard from './pages/UserDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
@@ -17,6 +19,8 @@ function App() {
           <Route path="/artikel/:id" element={<ArticleDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/daftar" element={<Register />} />
+          <Route path="/dashboard/user" element={<UserDashboard />} />
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
         </Routes>
       </Router>
     </ThemeProvider>

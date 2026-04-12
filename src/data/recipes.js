@@ -251,5 +251,217 @@ export const recipes = [
       "Masak terus hingga gula larut sempurna dan saring sebelum disajikan.",
       "Wedang jahe hangat siap dinikmati."
     ]
+  },
+  {
+    id: 11,
+    name: "Ayam Bakar Kecap",
+    category: "Makanan Berat",
+    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80",
+    cookingTime: "45 menit",
+    difficulty: "Sedang",
+    rating: 4.9,
+    description: "Ayam bakar manis gurih dengan aroma khas kecap.",
+    ingredients: [
+      "1/2 ekor ayam",
+      "3 sdm kecap manis",
+      "2 siung bawah putih",
+      "Air secukupnya",
+      "1 sdt ketumbar ",
+      "Garam secukupnya"
+    ],
+    steps: [
+      "Haluskan bawang putih dan ketumbar.",
+      "rebus ayam dengan bubu hingga empuk.",
+      "Olesi ayam dengan kecap manis.",
+      "bakar dan masak ayam hingga kecoklatan",
+      "Sajikan selagi hangat"
+    ]
+  },
+  {
+    id: 12,
+    name: "Mie Goreng Jawa",
+    category: "Makanan Berat",
+    image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=800&q=80",
+    cookingTime: "30 menit",
+    difficulty: "Mudah",
+    rating: 4.9,
+    description: "Mie goreng tradisional dengan rasa manis gurih.",
+    ingredients: [
+      "1 bungkus mie telur",
+      "3 siung bawang putih",
+      "1 butir telur ayam ",
+      "1 sdm kecap manis",
+      "Kol secukupnya ",
+      "Garam, merica, dan bumbu lainnya"
+    ],
+    steps: [
+      "Rebus mie hingga matang.",
+      "Tumis bawang putih hingga harum.",
+      "Masukkan telur, lalu orak-arik.",
+      "Tambahkan mie dan sayur. ",
+      "beri kecap dan bumbu, aduk rata.",
+      "angkat dan sajikan selagi hangat."
+    ]
+  },
+  {
+    id: 13,
+    name: "Pisang Goreng",
+    category: "Camilan",
+    image: "https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=800&q=80",
+    cookingTime: "25 menit",
+    difficulty: "Mudah",
+    rating: 4.9,
+    description: "Camilan klasik renyah di luar, lembut didalam.",
+    ingredients: [
+      "5 Buah pisag",
+      "Gula dan garam",
+      "Air Scukupnya ",
+      "100 gram tepung terigu"
+    ],
+    steps: [
+      "Campur tepung, gula, garam, dan air menjadi 1 adonan.",
+      "Celupkan pisang ke adonan.",
+      "Goreng hingga berwarna keemasan.",
+      "Angkat dan tiriskan ",
+      "sajikan selagi panas"
+    ]
+  },
+  {
+    id: 14,
+    name: "Tahu Isi",
+    category: "Camilan",
+    image: "https://media.istockphoto.com/id/1547288297/id/foto/gehu-pedas-tahu-putih-isi-goreng-dengan-sayuran-campur-cincang-dan-ayam-cincang-atau-tahu-isi.webp?a=1&b=1&s=612x612&w=0&k=20&c=UID2YJLGLJOCfmjncFQoVfmGkjzU62i0Dxi9ASD8mqs=",
+    cookingTime: "30 menit",
+    difficulty: "Sedang",
+    rating: 4.9,
+    description: "Tahu goreng berisi sayuran gurih.",
+    ingredients: [
+      "5 buah tahu",
+      "Wortel, kol, seledri dan sayuran sesuai selera",
+      "2 siung bawah putih.",
+      "tepung terigu.",
+      "garam dan penyedap rasa.",
+      "Air Secukupnya"
+    ],
+    steps: [
+      "Tumis sayuran dengan bumbu.",
+      "Belah tahu, isi dengan sayur.",
+      "Celupkan ke adonan tepung.",
+      "Goreng hingga matang",
+      "Sajikan selagi hangat"
+    ]
+  },
+  {
+    id: 15,
+    name: "Cireng",
+    category: "Camilan",
+    image: "https://media.istockphoto.com/id/2216398762/id/foto/cireng-jajanan-gurih-makanan-indonesia.webp?a=1&b=1&s=612x612&w=0&k=20&c=kXDGBckHoEYEJLwRK5ojhM5l51bAiaDNHD8eTEbFBMY=",
+    cookingTime: "25 menit",
+    difficulty: "Mudah",
+    rating: 4.9,
+    description: "Camilan kenyal khas sunda.",
+    ingredients: [
+      "150 gram tepung tapioka.",
+      "Garam dan penyedap rasa",
+      "2 siung bawang putih.",
+      "Air hangat."
+    ],
+    steps: [
+      "Campur semua bahan menjadi 1.",
+      "bentuk adonan cireng .",
+      "Goreng hingga matang.",
+      "Sajikan dengan saus atau sambal"
+    ]
+  },
+  {
+    id: 16,
+    name: "Es Teh Lemon",
+    category: "Minuman",
+    image: "https://images.unsplash.com/photo-1558640476-437a2b9438a2?auto=format&fit=crop&w=800&q=80",
+    cookingTime: "10 menit",
+    difficulty: "Mudah",
+    rating: 4.9,
+    description: "Minuman segar dengan rasa asam manis.",
+    ingredients: [
+      "1 kantung teh",
+      "1 buah lemon",
+      "Gula Secukupnya ",
+      "Es batu"
+    ],
+    steps: [
+      "Seduh teh.",
+      "Tambahkan Gula.",
+      "Peras lemon.",
+      "Tambahkan es batu",
+      "Sajikan"
+    ]
+  },
+  {
+    id: 17,
+    name: "Jus Mangga",
+    category: "Minuman",
+    image: "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?auto=format&fit=crop&w=800&q=80",
+    cookingTime: "15 menit",
+    difficulty: "Mudah",
+    rating: 4.9,
+    description: "Minuman dari buah segar dan manis alami.",
+    ingredients: [
+      "1 Buah mangga",
+      "3 Air secukupnya",
+      "Gula (Opsional) ",
+      "Es Batu"
+    ],
+    steps: [
+      "Kupas dan potong buah mangga.",
+      "Blender dengan air.",
+      "Tambahkan gula jika perlu.",
+      "Sajikan dingin"
+    ]
+  },
+  {
+    id: 18,
+    name: "Susu Jahe Hangat",
+    category: "Minuman",
+    image: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=800&q=80",
+    cookingTime: "20 menit",
+    difficulty: "Mudah",
+    rating: 4.9,
+    description: "Minuman hangat dengan rasa manis dan sedikit pedas.",
+    ingredients: [
+      "Gula Secukupnya",
+      "1 ruas jahe",
+      "200 ml susu "
+    ],
+    steps: [
+      "Rebus jahe hingga harum.",
+      "Tambahkan Susu.",
+      "masukkan gula.",
+      "Aduk dan sajikan"
+    ]
+  },
+  {
+    id: 19,
+    name: "Gudeg Jogja",
+    category: "Tradisional",
+    image: "https://media.istockphoto.com/id/624460666/id/foto/nasi-gudeg-jogja.webp?a=1&b=1&s=612x612&w=0&k=20&c=VEeWHNRvSQDc5w15xq9zyMyLBnYzip7_xl1o5A8fo6E=",
+    cookingTime: "120 menit",
+    difficulty: "Sulit",
+    rating: 4.9,
+    description: "Masakan khas manis berbahan nangka muda.",
+    ingredients: [
+      "500 gram nangka muda",
+      "300 ml santan",
+      "3 buah bawang putih ",
+      "5 buah bawang merah",
+      "Gula merah ",
+      "Garam"
+    ],
+    steps: [
+      "Rebus nangka hingga empuk.",
+      "haluskan Bumbu.",
+      "masak dengan santan dan bumbu.",
+      "Masak lama hingga bumbu meresap",
+      "sajikan dengan nasi hangat"
+    ]
   }
 ];

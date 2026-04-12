@@ -7,6 +7,7 @@ import CategoryFilter from './CategoryFilter';
 const RecipeList = ({ recipes, searchQuery = '' }) => {
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [showAllRecipes, setShowAllRecipes] = useState(false);
   const navigate = useNavigate();
 
   // Sync local search with URL param
@@ -35,6 +36,9 @@ const RecipeList = ({ recipes, searchQuery = '' }) => {
       recipe.description.toLowerCase().includes(localSearch.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const displayedRecipes = showAllRecipes ? filteredRecipes : filteredRecipes.slice(0, 6);
+  const hasMore = filteredRecipes.length > 6;
 
   return (
     <section className="recipe-section" id="resep">
@@ -79,8 +83,8 @@ const RecipeList = ({ recipes, searchQuery = '' }) => {
       </div>
 
       <div className="recipe-grid">
-        {filteredRecipes.length > 0 ? (
-          filteredRecipes.map(recipe => (
+        {displayedRecipes.length > 0 ? (
+          displayedRecipes.map(recipe => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))
         ) : (
@@ -92,6 +96,17 @@ const RecipeList = ({ recipes, searchQuery = '' }) => {
           </div>
         )}
       </div>
+      
+      {hasMore && (
+        <div style={{ textAlign: 'center', marginTop: '50px' }}>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => setShowAllRecipes(!showAllRecipes)}
+          >
+            {showAllRecipes ? "Sembunyikan Sebagian" : "Lihat Selengkapnya"}
+          </button>
+        </div>
+      )}
     </section>
   );
 };

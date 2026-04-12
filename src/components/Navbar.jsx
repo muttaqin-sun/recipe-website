@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Utensils, Moon, Sun, Search, X } from 'lucide-react';
+import { User, Utensils, Moon, Sun, Search, X, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { isDark, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const navigate = useNavigate();
@@ -77,10 +79,28 @@ const Navbar = () => {
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          {/* User Account */}
-          <Link to="/login" className="user-icon" style={{ textDecoration: 'none' }}>
-            <User size={18} /> Akun
-          </Link>
+          {/* User Account or Dashboard Action */}
+          {!user ? (
+            <Link to="/login" className="user-icon" style={{ textDecoration: 'none' }}>
+              <User size={18} /> Akun
+            </Link>
+          ) : (
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/user"} className="user-icon" style={{ textDecoration: 'none', background: 'var(--text-dark)' }}>
+                <User size={18} /> {user.role === 'admin' ? "Dasbor Admin" : "Dasbor"}
+              </Link>
+              <button 
+                onClick={() => {
+                  logout();
+                  navigate('/');
+                }} 
+                className="icon-btn" 
+                title="Keluar"
+              >
+                <LogOut size={20} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>
