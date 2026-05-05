@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { PenTool, ImagePlus, CheckCircle, FileText } from 'lucide-react';
+import { PenTool, ImagePlus, CheckCircle, FileText, User } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const UserDashboard = () => {
   const { user } = useAuth();
-  const navigate = useRouter();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('resep'); // 'resep' atau 'artikel'
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -17,7 +17,7 @@ const UserDashboard = () => {
     window.scrollTo(0, 0);
     // Jika tidak login, kembalikan ke login
     if (!user || user.role !== 'user') {
-      navigate.push('/login');
+      navigate('/login');
     }
   }, [user, navigate]);
 
@@ -36,9 +36,14 @@ const UserDashboard = () => {
     <div className="app-container">
       <Navbar />
       <main className="dashboard-container">
-        <div className="dashboard-header">
-          <h1>Dasbor Pengguna</h1>
-          <p>Selamat datang, {user.name}! Menginspirasi Nusantara melalui masakan Anda.</p>
+        <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+          <div>
+            <h1>Dasbor Pengguna</h1>
+            <p>Selamat datang, {user.name}! Menginspirasi Nusantara melalui masakan Anda.</p>
+          </div>
+          <Link to="/dashboard/user/profile" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <User size={20} /> Profil Saya
+          </Link>
         </div>
 
         <div className="dashboard-tabs">

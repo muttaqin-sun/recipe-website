@@ -1,25 +1,25 @@
 'use client';
 
 import React, { useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Users, FileText, CheckSquare, Activity, LogOut } from "lucide-react";
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
-  const navigate = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
     // Protect route for admin only
     if (!user || user.role !== "admin") {
-      navigate.push("/login");
+      navigate("/login");
     }
   }, [user, navigate]);
 
   const handleLogout = () => {
     logout();
-    navigate.push("/");
+    navigate("/");
   };
 
   if (!user) return null;
@@ -32,15 +32,15 @@ const AdminDashboard = () => {
           <h2>Rasa Admin</h2>
         </div>
         <nav className="admin-nav">
-          <a href="/#overview" className="admin-nav-item active">
+          <Link to="/dashboard/admin" className="admin-nav-item active">
             <Activity size={20} /> Ringkasan
-          </a>
-          <a href="/#recipes" className="admin-nav-item">
+          </Link>
+          <Link to="/dashboard/admin/recipes" className="admin-nav-item">
             <FileText size={20} /> Kelola Resep
-          </a>
-          <a href="/#users" className="admin-nav-item">
+          </Link>
+          <Link to="/dashboard/admin/users" className="admin-nav-item">
             <Users size={20} /> Pengguna
-          </a>
+          </Link>
           <button onClick={handleLogout} className="admin-nav-item logout-btn">
             <LogOut size={20} /> Keluar
           </button>

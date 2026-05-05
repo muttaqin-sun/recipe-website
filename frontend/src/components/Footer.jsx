@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -20,7 +20,7 @@ const Footer = () => {
           <div className="footer-links">
             <h3>Tautan Cepat</h3>
             <ul>
-              <li><Link href="/">Beranda</Link></li>
+              <li><Link to="/">Beranda</Link></li>
               <li><a href="/#resep">Resep</a></li>
               <li><a href="/#kategori">Kategori</a></li>
               <li><a href="/#artikel">Artikel</a></li>

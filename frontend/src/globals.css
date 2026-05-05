@@ -1,44 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary: #F48B60;
-  --primary-dark: #E07A50;
-  --secondary: #F48B60;
-  --text-dark: #3E3B39;
-  --text-light: #7A7671;
-  --bg-light: #FCF7F2;
+  --primary: #1F3E2B;
+  --primary-dark: #152E1F;
+  --secondary: #8B5E34;
+  --text-dark: #2B2A28;
+  --text-light: #6C6B69;
+  --bg-light: #FDFDFD;
+  --bg-hero: #F7F4EF;
   --white: #FFFFFF;
-  --gray-200: #EEDCD3;
-  --gray-300: #D8CCB9;
-  --footer-bg: #6A655C;
-  --shadow-sm: 0 4px 12px rgba(90, 80, 70, 0.05);
-  --shadow-md: 0 12px 24px rgba(90, 80, 70, 0.08);
-  --radius: 24px;
-  --radius-lg: 40px;
+  --gray-200: #E6E4E1;
+  --gray-300: #C4C2BE;
+  --footer-bg: #1F3E2B;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --radius: 16px;
+  --radius-lg: 32px;
+  --radius-pill: 100px;
   --card-bg: #FFFFFF;
-  --input-bg: #FCF7F2;
-  --border-color: #EEDCD3;
-  --navbar-bg: transparent;
+  --input-bg: #FDFDFD;
+  --border-color: #E6E4E1;
+  --navbar-bg: #FFFFFF;
   --transition-theme: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
 /* Dark Mode Variables */
 [data-theme="dark"] {
-  --primary: #F48B60;
-  --primary-dark: #E07A50;
+  --primary: #2C573D;
+  --primary-dark: #1F3E2B;
+  --secondary: #A67645;
   --text-dark: #F0EBE5;
   --text-light: #A89F97;
-  --bg-light: #1A1714;
-  --white: #252220;
-  --gray-200: #3A3530;
+  --bg-light: #121212;
+  --bg-hero: #1E1C1A;
+  --white: #1A1A1A;
+  --gray-200: #333333;
   --gray-300: #4A4540;
-  --footer-bg: #111010;
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.4);
-  --card-bg: #252220;
-  --input-bg: #1A1714;
-  --border-color: #3A3530;
-  --navbar-bg: rgba(26, 23, 20, 0.92);
+  --footer-bg: #0F1F15;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.5);
+  --card-bg: #1A1A1A;
+  --input-bg: #222222;
+  --border-color: #333333;
+  --navbar-bg: #1A1A1A;
 }
 
 * {
@@ -64,10 +68,8 @@ h1, h2, h3, h4 {
   line-height: 1.2;
 }
 
-.script-font {
-  font-family: 'Caveat', cursive;
-  font-size: 3rem;
-  letter-spacing: 1px;
+.serif-font {
+  font-family: 'Playfair Display', serif;
 }
 
 img {

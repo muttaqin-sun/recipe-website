@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import RecipeCard from './RecipeCard';
 import CategoryFilter from './CategoryFilter';
@@ -10,7 +10,7 @@ const RecipeList = ({ recipes, searchQuery = '' }) => {
   const [activeCategory, setActiveCategory] = useState('Semua');
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const [showAllRecipes, setShowAllRecipes] = useState(false);
-  const navigate = useRouter();
+  const navigate = useNavigate();
 
   // Sync local search with URL param
   useEffect(() => {
@@ -20,15 +20,15 @@ const RecipeList = ({ recipes, searchQuery = '' }) => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (localSearch.trim()) {
-      navigate.push(`/?search=${encodeURIComponent(localSearch.trim())}`);
+      navigate(`/?search=${encodeURIComponent(localSearch.trim())}`);
     } else {
-      navigate.push('/');
+      navigate('/');
     }
   };
 
   const clearSearch = () => {
     setLocalSearch('');
-    navigate.push('/');
+    navigate('/');
   };
 
   const filteredRecipes = recipes.filter(recipe => {
@@ -49,37 +49,13 @@ const RecipeList = ({ recipes, searchQuery = '' }) => {
         setActiveCategory={setActiveCategory}
       />
 
-      {/* Inline Search Bar */}
-      <div className="recipe-search-bar">
-        <form onSubmit={handleSearchSubmit} className="recipe-search-form">
-          <div className="recipe-search-input-wrap">
-            <Search size={20} className="recipe-search-icon" />
-            <input
-              type="text"
-              className="recipe-search-input"
-              placeholder="Cari nama makanan, misalnya: Rendang, Bakso..."
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-            />
-            {localSearch && (
-              <button
-                type="button"
-                className="recipe-search-clear"
-                onClick={clearSearch}
-                aria-label="Hapus pencarian"
-              >
-                <X size={18} />
-              </button>
-            )}
-          </div>
-          <button type="submit" className="btn btn-primary recipe-search-submit">
-            Cari
-          </button>
-        </form>
+      {/* Header and Results info */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
         {searchQuery && (
-          <p className="search-result-info">
+          <p className="search-result-info" style={{ margin: 0, padding: '12px 20px', background: 'var(--bg-light)', borderRadius: '100px', border: '1px solid var(--border-color)', width: '100%' }}>
             Menampilkan hasil untuk: <strong>"{searchQuery}"</strong>
             &nbsp;—&nbsp;{filteredRecipes.length} resep ditemukan
+            <button onClick={clearSearch} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', marginLeft: '12px', fontWeight: 'bold' }}>✕ Hapus Pencarian</button>
           </p>
         )}
       </div>

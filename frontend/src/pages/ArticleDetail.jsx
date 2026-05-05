@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,7 +9,7 @@ import { articles } from '@/data/articles';
 
 const ArticleDetail = () => {
   const { id } = useParams();
-  const navigate = useRouter();
+  const navigate = useNavigate();
   
   const article = articles.find(a => a.id === parseInt(id));
 
@@ -23,7 +23,7 @@ const ArticleDetail = () => {
         <Navbar />
         <div className="not-found">
           <h2>Artikel tidak ditemukan</h2>
-          <button onClick={() => navigate.push('/')} className="btn btn-primary">Kembali ke Beranda</button>
+          <button onClick={() => navigate('/')} className="btn btn-primary">Kembali ke Beranda</button>
         </div>
         <Footer />
       </div>
@@ -35,7 +35,7 @@ const ArticleDetail = () => {
       <Navbar />
       
       <main className="article-detail-container">
-        <button onClick={() => navigate.push('/')} className="back-button">
+        <button onClick={() => navigate('/')} className="back-button">
           <ArrowLeft size={20} /> Kembali
         </button>
 

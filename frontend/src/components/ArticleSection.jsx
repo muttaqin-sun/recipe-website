@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { articles } from '../data/articles';
 
 const ArticleSection = () => {
@@ -23,7 +23,7 @@ const ArticleSection = () => {
               <span className="article-date">{article.date}</span>
               <h3>{article.title}</h3>
               <p>{article.excerpt}</p>
-              <Link href={`/artikel/${article.id}`} className="read-more">Baca Selengkapnya</Link>
+              <Link to={`/artikel/${article.id}`} className="read-more">Baca Selengkapnya</Link>
             </div>
           </article>
         ))}
