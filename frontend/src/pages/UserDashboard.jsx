@@ -21,13 +21,66 @@ const UserDashboard = () => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      e.target.reset();
-    }, 3000);
+    const userStr = localStorage.getItem('user');
+    const token = userStr ? JSON.parse(userStr).token : '';
+    
+    if (activeTab === 'resep') {
+      const payload = {
+        name: e.target.name.value,
+        category: e.target.category.value,
+        cooking_time: e.target.cookingTime.value,
+        difficulty: e.target.difficulty.value,
+        description: e.target.description.value,
+        ingredients: e.target.ingredients.value.split('\n').filter(i => i.trim() !== ''),
+        steps: e.target.steps.value.split('\n').filter(s => s.trim() !== '')
+      };
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/api/recipes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsSubmitted(true);
+          e.target.reset();
+          setTimeout(() => setIsSubmitted(false), 3000);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      const payload = {
+        title: e.target.title.value,
+        excerpt: e.target.excerpt.value,
+        content: e.target.content.value
+      };
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/api/articles', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          setIsSubmitted(true);
+          e.target.reset();
+          setTimeout(() => setIsSubmitted(false), 3000);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
   if (!user) return null;
@@ -82,11 +135,11 @@ const UserDashboard = () => {
                 <div className="form-grid">
                   <div className="form-group">
                     <label>Nama Menu</label>
-                    <input type="text" placeholder="Contoh: Nasi Goreng Spesial" required />
+                    <input name="name" type="text" placeholder="Contoh: Nasi Goreng Spesial" required />
                   </div>
                   <div className="form-group">
                     <label>Kategori</label>
-                    <select required>
+                    <select name="category" required>
                       <option value="">Pilih Kategori...</option>
                       <option value="Makanan Berat">Makanan Berat</option>
                       <option value="Camilan">Camilan</option>
@@ -95,12 +148,12 @@ const UserDashboard = () => {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Lama Memasak</label>
-                    <input type="text" placeholder="Contoh: 45 Menit" required />
+                    <label>Lama Memasak (angka menit)</label>
+                    <input name="cookingTime" type="number" placeholder="Contoh: 45" required />
                   </div>
                   <div className="form-group">
                     <label>Tingkat Kesulitan</label>
-                    <select required>
+                    <select name="difficulty" required>
                       <option value="Mudah">Mudah</option>
                       <option value="Sedang">Sedang</option>
                       <option value="Sulit">Sulit</option>
@@ -110,17 +163,17 @@ const UserDashboard = () => {
 
                 <div className="form-group">
                   <label>Deskripsi Singkat</label>
-                  <textarea rows="3" placeholder="Ceritakan sedikit tentang resep ini..." required></textarea>
+                  <textarea name="description" rows="3" placeholder="Ceritakan sedikit tentang resep ini..." required></textarea>
                 </div>
 
                 <div className="form-group">
                   <label>Bahan-bahan (pisahkan dengan baris baru)</label>
-                  <textarea rows="5" placeholder="1 siung Bawang Merah&#10;2 sdm Minyak Goreng..." required></textarea>
+                  <textarea name="ingredients" rows="5" placeholder="1 siung Bawang Merah&#10;2 sdm Minyak Goreng..." required></textarea>
                 </div>
 
                 <div className="form-group">
                   <label>Langkah-langkah (pisahkan dengan baris baru)</label>
-                  <textarea rows="5" placeholder="1. Tumis bumbu dasar hingga harum.&#10;2. Masukkan air..." required></textarea>
+                  <textarea name="steps" rows="5" placeholder="Tumis bumbu dasar hingga harum.&#10;Masukkan air..." required></textarea>
                 </div>
 
                 <button type="submit" className="btn btn-primary">Kirim Resep</button>
@@ -139,17 +192,17 @@ const UserDashboard = () => {
 
                 <div className="form-group">
                   <label>Judul Artikel</label>
-                  <input type="text" placeholder="Contoh: 5 Rahasia Sambal Awet Tanpa Pengawet" required />
+                  <input name="title" type="text" placeholder="Contoh: 5 Rahasia Sambal Awet Tanpa Pengawet" required />
                 </div>
 
                 <div className="form-group">
                   <label>Kutipan Singkat (Excerpt)</label>
-                  <textarea rows="2" placeholder="Ringkasan singkat artikel yang akan muncul di card awal..." required></textarea>
+                  <textarea name="excerpt" rows="2" placeholder="Ringkasan singkat artikel yang akan muncul di card awal..." required></textarea>
                 </div>
 
                 <div className="form-group">
                   <label>Isi Artikel Sepenuhnya</label>
-                  <textarea rows="10" placeholder="Tuliskan pengalaman masakan kuliner Anda di sini bebas puitis..." required></textarea>
+                  <textarea name="content" rows="10" placeholder="Tuliskan pengalaman masakan kuliner Anda di sini bebas puitis..." required></textarea>
                 </div>
 
                 <button type="submit" className="btn btn-primary">Kirim Artikel</button>

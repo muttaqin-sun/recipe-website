@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { articles } from '../data/articles';
+// import { articles } from '../data/articles';
 
-const ArticleSection = () => {
+
+const ArticleSection = ({ articles = [] }) => {
   const [showAllArticles, setShowAllArticles] = useState(false);
   const displayedArticles = showAllArticles ? articles : articles.slice(0, 3);
   const hasMore = articles.length > 3;
@@ -22,7 +23,7 @@ const ArticleSection = () => {
             <div className="article-content">
               <span className="article-date">{article.date}</span>
               <h3>{article.title}</h3>
-              <p>{article.excerpt}</p>
+              <p>{article.excerpt || (typeof article.content === 'string' ? article.content.substring(0, 120) + '...' : 'Baca selengkapnya untuk tips menarik.')}</p>
               <Link to={`/artikel/${article.id}`} className="read-more">Baca Selengkapnya</Link>
             </div>
           </article>

@@ -13,18 +13,43 @@ import { recipes } from '@/data/recipes';
 // Tahap 8 Integration requires substituting this with axios fetches:
 
 export default function Home() {
-  const [dataRecipes, setDataRecipes] = useState(recipes);
+  const [dataRecipes, setDataRecipes] = useState([]);
+  const [dataArticles, setDataArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/recipes')
-      .then(res => res.json())
-      .then(res => {
-        if (res.success && res.data.length > 0) {
-          setDataRecipes(res.data);
-        }
-      })
-      .catch(err => console.log('API not ready yet, using fallback dummy data', err));
+    const fetchData = async () => {
+      try {
+        // Fetch Recipes
+        const recipeRes = await fetch('http://127.0.0.1:5000/api/recipes');
+        const recipeData = await recipeRes.json();
+        if (recipeData.success) setDataRecipes(recipeData.data);
+
+        // Fetch Articles
+        const articleRes = await fetch('http://127.0.0.1:5000/api/articles');
+        const articleData = await articleRes.json();
+        if (articleData.success) setDataArticles(articleData.data);
+      } catch (err) {
+        console.error('Gagal mengambil data dari API, pastikan backend berjalan:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="app-container">
+        <Navbar />
+        <main style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+          <div className="loader">Menyiapkan hidangan lezat...</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
@@ -32,7 +57,7 @@ export default function Home() {
       <main>
         <Hero />
         <RecipeList recipes={dataRecipes} />
-        <ArticleSection />
+        <ArticleSection articles={dataArticles} />
       </main>
       <Footer />
     </div>

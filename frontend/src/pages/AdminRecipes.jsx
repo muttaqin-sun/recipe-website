@@ -1,115 +1,101 @@
 import React, { useEffect } from "react";
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Users, FileText, Activity, LogOut, Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
+import AdminLayout from '@/components/AdminLayout';
 
 const AdminRecipes = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [recipes, setRecipes] = useState([]);
+
+  const fetchRecipes = async () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = userStr ? JSON.parse(userStr).token : '';
+      const res = await fetch('http://127.0.0.1:5000/api/recipes/admin/all', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRecipes(data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Protect route for admin only
-    if (!user || user.role !== "admin") {
-      navigate("/login");
-    }
+    if (!user || user.role !== "admin") navigate("/login");
+    else fetchRecipes();
   }, [user, navigate]);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
+  const handleApprove = async (id) => {
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = userStr ? JSON.parse(userStr).token : '';
+      const res = await fetch(`http://127.0.0.1:5000/api/recipes/${id}/approve`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchRecipes();
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (!user) return null;
 
   return (
-    <div className="admin-layout">
-      {/* Sidebar Admin */}
-      <aside className="admin-sidebar">
-        <div className="admin-brand">
-          <h2>Rasa Admin</h2>
+    <AdminLayout title="Kelola Resep" subtitle="Daftar seluruh resep yang terdaftar di platform Rasa Nusantara.">
+      <div className="admin-card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '1.2rem', color: 'var(--text-dark)'}}>Semua Resep</h2>
+          <button className="btn btn-primary" style={{padding: '8px 20px', fontSize: '0.9rem'}}>Tambah Resep Baru</button>
         </div>
-        <nav className="admin-nav">
-          <Link to="/dashboard/admin" className="admin-nav-item">
-            <Activity size={20} /> Ringkasan
-          </Link>
-          <Link to="/dashboard/admin/recipes" className="admin-nav-item active">
-            <FileText size={20} /> Kelola Resep
-          </Link>
-          <Link to="/dashboard/admin/users" className="admin-nav-item">
-            <Users size={20} /> Pengguna
-          </Link>
-          <button onClick={handleLogout} className="admin-nav-item logout-btn">
-            <LogOut size={20} /> Keluar
-          </button>
-        </nav>
-      </aside>
-
-      {/* Konten Utama Admin */}
-      <main className="admin-content">
-        <header className="admin-header">
-          <h1>Kelola Resep</h1>
-          <p>Daftar seluruh resep yang terdaftar di platform Rasa Nusantara.</p>
-        </header>
-
-        <div className="admin-table-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2>Semua Resep</h2>
-            <button className="btn btn-primary">Tambah Resep Baru</button>
-          </div>
-          <div className="table-responsive">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nama Resep</th>
-                  <th>Kategori</th>
-                  <th>Penulis</th>
-                  <th>Status</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>#R-102</td>
-                  <td>Rendang Daging Padang</td>
-                  <td>Makanan Berat</td>
-                  <td>admin@rasanusantara.id</td>
-                  <td><span className="badge badge-success">Publik</span></td>
+        <div className="table-responsive">
+          <table className="admin-data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nama Resep</th>
+                <th>Kategori</th>
+                <th>Penulis (ID)</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recipes.map(recipe => (
+                <tr key={recipe.id}>
+                  <td>#R-{recipe.id}</td>
+                  <td className="stat-cell">{recipe.name}</td>
+                  <td>{recipe.category}</td>
+                  <td>{recipe.author_id}</td>
                   <td>
-                    <button className="icon-btn" title="Edit"><Edit size={16} /></button>
-                    <button className="icon-btn" title="Hapus"><Trash2 size={16} color="red" /></button>
+                    {recipe.status === 'approved' ? (
+                      <span style={{padding: '4px 8px', borderRadius: '4px', background: '#E8F5E9', color: '#2E7D32', fontSize: '0.8rem', fontWeight: 600}}>Publik</span>
+                    ) : (
+                      <span style={{padding: '4px 8px', borderRadius: '4px', background: '#FFF3E0', color: '#E65100', fontSize: '0.8rem', fontWeight: 600}}>Menunggu</span>
+                    )}
+                  </td>
+                  <td>
+                    {recipe.status === 'pending' && (
+                      <button onClick={() => handleApprove(recipe.id)} className="btn btn-primary" style={{fontSize: '0.7rem', padding: '4px 8px', marginRight: '8px'}}>Approve</button>
+                    )}
+                    <button className="icon-btn" style={{width: '32px', height: '32px'}} title="Edit"><Edit size={14} /></button>
+                    <button className="icon-btn" style={{width: '32px', height: '32px', marginLeft: '8px'}} title="Hapus"><Trash2 size={14} color="red" /></button>
                   </td>
                 </tr>
-                <tr>
-                  <td>#R-101</td>
-                  <td>Sate Lilit Bali</td>
-                  <td>Tradisional</td>
-                  <td>user@email.com</td>
-                  <td><span className="badge badge-success">Publik</span></td>
-                  <td>
-                    <button className="icon-btn" title="Edit"><Edit size={16} /></button>
-                    <button className="icon-btn" title="Hapus"><Trash2 size={16} color="red" /></button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>#R-100</td>
-                  <td>Es Dawet Ayu</td>
-                  <td>Minuman</td>
-                  <td>user@email.com</td>
-                  <td><span className="badge badge-pending">Menunggu</span></td>
-                  <td>
-                    <button className="icon-btn" title="Edit"><Edit size={16} /></button>
-                    <button className="icon-btn" title="Hapus"><Trash2 size={16} color="red" /></button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
-
 export default AdminRecipes;
