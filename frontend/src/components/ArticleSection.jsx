@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '@/utils/imageUrl';
 // import { articles } from '../data/articles';
 
 
@@ -19,7 +20,7 @@ const ArticleSection = ({ articles = [] }) => {
       <div className="article-grid">
         {displayedArticles.map(article => (
           <article key={article.id} className="article-card">
-            <img src={article.image} alt={article.title} className="article-image" />
+            <img src={getImageUrl(article.image)} alt={article.title} className="article-image" />
             <div className="article-content">
               <span className="article-date">{article.date}</span>
               <h3>{article.title}</h3>

@@ -14,7 +14,13 @@ const Footer = () => {
       <footer className="footer">
         <div className="footer-container">
           <div className="footer-brand">
-            <h2>Rasa Nusantara</h2>
+            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '20px' }}>
+              <span className="serif-font" style={{ color: 'var(--primary)', fontSize: '36px', fontWeight: '700' }}>rasa</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--secondary)" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '-2px', marginTop: '4px', transform: 'rotate(45deg)' }}>
+                <path d="M12 22C12 22 20 18 20 12C20 6 12 2 12 2C12 2 4 6 4 12C4 18 12 22 12 22Z" />
+              </svg>
+              <span className="serif-font" style={{ color: 'var(--secondary)', fontSize: '26px', fontWeight: '600', marginLeft: '2px', alignSelf: 'flex-end', paddingBottom: '3px' }}>Nusantara</span>
+            </div>
             <p>Membawa cita rasa autentik masakan Nusantara dari dapur kami ke meja makan Anda.</p>
           </div>
           <div className="footer-links">

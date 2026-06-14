@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { 
-  LayoutDashboard, BookOpen, LayoutGrid, ShoppingBag, 
-  Users, MessageSquare, BarChart2, Settings, 
+import {
+  LayoutDashboard, BookOpen, LayoutGrid, ShoppingBag,
+  Users, MessageSquare, BarChart2, Settings,
   Inbox, Activity, Terminal, Search, Bell, ChevronDown,
   Calendar, LogOut
 } from "lucide-react";
@@ -35,7 +35,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
           <div className="logo-icon"><LayoutDashboard size={20} /></div>
           <h2>rasa<span>Nusantara</span></h2>
         </div>
-        
+
         <div className="admin-menu-section">
           <div className="admin-menu-label">Menu Utama</div>
           <ul className="admin-menu-list">
@@ -44,25 +44,25 @@ const AdminLayout = ({ children, title, subtitle }) => {
                 <LayoutDashboard size={20} /> Dashboard
               </Link>
             </li>
-            
+
             {/* RESEP DROPDOWN */}
             <li>
-              <div 
-                className={`admin-menu-item ${path.includes('/dashboard/admin/recipes') ? 'active' : ''}`} 
+              <div
+                className={`admin-menu-item ${path.includes('/dashboard/admin/recipes') ? 'active' : ''}`}
                 onClick={() => setIsResepOpen(!isResepOpen)}
                 style={{ cursor: 'pointer' }}
               >
-                <BookOpen size={20} /> Resep 
-                <ChevronDown 
-                  size={16} 
+                <BookOpen size={20} /> Resep
+                <ChevronDown
+                  size={16}
                   style={{
-                    marginLeft: 'auto', 
+                    marginLeft: 'auto',
                     transform: isResepOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.3s'
-                  }} 
+                  }}
                 />
               </div>
-              
+
               {/* DROPDOWN ITEMS */}
               {isResepOpen && (
                 <ul className="admin-dropdown-list" style={{ listStyle: 'none', padding: '0 0 0 40px', margin: '8px 0' }}>
@@ -96,9 +96,9 @@ const AdminLayout = ({ children, title, subtitle }) => {
             <li><Link to="/dashboard/admin/activities" className={`admin-menu-item ${isActive('/dashboard/admin/activities')}`}><Activity size={20} /> Aktivitas</Link></li>
             <li><Link to="/dashboard/admin/system-logs" className={`admin-menu-item ${isActive('/dashboard/admin/system-logs')}`}><Terminal size={20} /> Log Sistem</Link></li>
             <li style={{ marginTop: '10px' }}>
-              <button 
-                onClick={handleLogout} 
-                className="admin-menu-item" 
+              <button
+                onClick={handleLogout}
+                className="admin-menu-item"
                 style={{ width: '100%', background: 'transparent', border: 'none', color: '#d32f2f', fontWeight: '500', cursor: 'pointer' }}
               >
                 <LogOut size={20} /> Keluar
@@ -132,7 +132,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
               </div>
             )}
           </div>
-          
+
           <div className="admin-topbar-right">
             {title === "Dashboard" && (
               <div className="admin-notification">
@@ -151,7 +151,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
             {title === "Dashboard" && (
               <div className="admin-date-picker">
                 <Calendar size={18} />
-                19 Mei - 25 Mei 2024
+                1 Mei - 31 Mei 2026
                 <ChevronDown size={16} />
               </div>
             )}

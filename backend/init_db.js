@@ -25,10 +25,15 @@ CREATE TABLE IF NOT EXISTS recipes (
   category TEXT,
   image TEXT,
   cooking_time INTEGER,
+  prep_time INTEGER,
+  portions INTEGER,
+  origin TEXT,
+  dish_type TEXT,
+  suitable_for TEXT,
   difficulty TEXT,
   rating DECIMAL(2,1) DEFAULT 0,
   description TEXT,
-  status TEXT DEFAULT 'approved',
+  status TEXT DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (author_id) REFERENCES users(id)
 );
@@ -56,7 +61,7 @@ CREATE TABLE IF NOT EXISTS articles (
   content TEXT NOT NULL,
   image TEXT,
   date DATE,
-  status TEXT DEFAULT 'approved',
+  status TEXT DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (author_id) REFERENCES users(id)
 );

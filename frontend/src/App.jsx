@@ -9,6 +9,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import RecipeDetail from './pages/RecipeDetail';
 import ArticleDetail from './pages/ArticleDetail';
+import TipsTrik from './pages/TipsTrik';
+import TentangKami from './pages/TentangKami';
 import UserDashboard from './pages/UserDashboard';
 import UserProfile from './pages/UserProfile';
 import AdminDashboard from './pages/AdminDashboard';
@@ -31,6 +33,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/resep/:id" element={<RecipeDetail />} />
         <Route path="/artikel/:id" element={<ArticleDetail />} />
+        <Route path="/tips" element={<TipsTrik />} />
+        <Route path="/tentang" element={<TentangKami />} />
         <Route path="/dashboard/user" element={<UserDashboard />} />
         <Route path="/dashboard/user/profile" element={<UserProfile />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />

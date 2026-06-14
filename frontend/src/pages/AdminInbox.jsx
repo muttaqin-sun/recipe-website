@@ -26,16 +26,16 @@ const AdminInbox = () => {
     <AdminLayout title="Pesan Masuk" subtitle="Kotak masuk pesan dari pengguna dan notifikasi sistem.">
       <div className="admin-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '1.2rem', color: 'var(--text-dark)'}}>Daftar Pesan</h2>
+          <h2 style={{ fontSize: '1.2rem', color: 'var(--text-dark)' }}>Daftar Pesan</h2>
         </div>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {dummyMessages.map(msg => (
-            <div key={msg.id} style={{ 
-              display: 'flex', gap: '16px', padding: '16px', 
-              borderRadius: '12px', 
+            <div key={msg.id} style={{
+              display: 'flex', gap: '16px', padding: '16px',
+              borderRadius: '12px',
               border: '1px solid var(--border-color)',
-              backgroundColor: msg.isRead ? 'transparent' : '#F7F4EF',
+              backgroundColor: msg.isRead ? 'transparent' : '#5f9466ff',
               cursor: 'pointer'
             }}>
               <div style={{ color: msg.isRead ? 'var(--text-light)' : 'var(--primary)' }}>

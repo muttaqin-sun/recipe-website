@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { getImageUrl } from '@/utils/imageUrl';
 const ArticleDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ const ArticleDetail = () => {
             <p className="article-excerpt">{article.excerpt}</p>
           </header>
           
-          <img src={article.image} alt={article.title} className="article-hero-image" />
+          <img src={getImageUrl(article.image)} alt={article.title} className="article-hero-image" />
           
           <div className="article-body">
             {typeof article.content === 'string' ? article.content.split('\n\n').map((paragraph, index) => (

@@ -5,7 +5,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Clock, ChefHat, Star, ChevronRight, Heart, Bookmark, Share2, Plus, Minus, CheckCircle2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { recipes } from '@/data/recipes';
+import { getImageUrl } from '@/utils/imageUrl';
 
 const RecipeDetail = () => {
   const { id } = useParams();
@@ -15,6 +15,8 @@ const RecipeDetail = () => {
   const [portions, setPortions] = useState(4);
   const [isSaved, setIsSaved] = useState(false);
 
+  const [relatedRecipes, setRelatedRecipes] = useState([]);
+
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -23,6 +25,13 @@ const RecipeDetail = () => {
         const data = await res.json();
         if (data.success) {
           setRecipe(data.data);
+        }
+        
+        // Ambil semua resep untuk sidebar related recipes
+        const resAll = await fetch('http://127.0.0.1:5000/api/recipes');
+        const dataAll = await resAll.json();
+        if (dataAll.success) {
+          setRelatedRecipes(dataAll.data);
         }
       } catch (err) {
         console.error('Gagal mengambil detail resep:', err);
@@ -60,12 +69,13 @@ const RecipeDetail = () => {
     );
   }
 
-  // Dummy data for visual fidelity
-  const preparationTime = "30 menit";
-  const origin = "Nusantara, Indonesia";
-  const dishType = "Hidangan Utama";
+  // Data dynamic for visual fidelity
+  const preparationTime = recipe.prep_time ? `${recipe.prep_time} menit` : "15 menit";
+  const origin = recipe.origin || "Nusantara, Indonesia";
+  const dishType = recipe.dish_type || "Hidangan Utama";
   const tags = [recipe.category.toLowerCase(), recipe.name.toLowerCase().split(' ')[0], "masakan rumahan"];
-  const suitableFor = "Makan siang, Makan malam, Acara spesial";
+  const suitableFor = recipe.suitable_for || "Makan siang, Makan malam";
+  const defaultPortions = recipe.portions || 4;
 
   // Mocking 2 columns of ingredients from the existing single array
   const halfLength = Math.ceil(recipe.ingredients.length / 2);
@@ -122,15 +132,15 @@ const RecipeDetail = () => {
           </div>
 
           <div className="detail-main-image-wrapper">
-            <img src={recipe.image} alt={recipe.name} className="detail-main-image" />
+            <img src={getImageUrl(recipe.image)} alt={recipe.name} className="detail-main-image" />
           </div>
 
           <div className="recipe-info-bar">
             <div className="info-bar-item">
               <ChefHat className="info-icon" size={24} />
               <div>
-                <span className="info-label">Porsi</span>
-                <span className="info-value">{portions}-{portions+2} porsi</span>
+                <span className="info-label">Porsi Default</span>
+                <span className="info-value">{defaultPortions} porsi</span>
               </div>
             </div>
             <div className="info-bar-item">
@@ -193,7 +203,7 @@ const RecipeDetail = () => {
                 {recipe.steps.map((step, index) => (
                   <div key={index} className="step-item">
                     <div className="step-number">{index + 1}</div>
-                    <img src={recipe.image} alt={`Langkah ${index + 1}`} className="step-thumb" />
+                    <img src={getImageUrl(recipe.image)} alt={`Langkah ${index + 1}`} className="step-thumb" />
                     <div className="step-content">
                       <h3>Langkah {index + 1}</h3>
                       <p>{step}</p>
@@ -273,9 +283,9 @@ const RecipeDetail = () => {
             <div className="sidebar-card related-recipes">
               <h3>Resep Terkait</h3>
               <div className="related-list">
-                {recipes.filter(r => r.id !== recipe.id).slice(0, 3).map((related) => (
-                  <Link to={`/recipe/${related.id}`} key={related.id} className="related-item">
-                    <img src={related.image} alt={related.name} />
+                {relatedRecipes.filter(r => r.id !== recipe.id).slice(0, 3).map((related) => (
+                  <Link to={`/resep/${related.id}`} key={related.id} className="related-item">
+                    <img src={getImageUrl(related.image)} alt={related.name} />
                     <div className="related-info">
                       <h4>{related.name}</h4>
                       <span><Clock size={12} /> {related.cookingTime}</span>

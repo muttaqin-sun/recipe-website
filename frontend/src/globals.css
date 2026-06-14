@@ -26,21 +26,21 @@
 
 /* Dark Mode Variables */
 [data-theme="dark"] {
-  --primary: #2C573D;
-  --primary-dark: #1F3E2B;
-  --secondary: #A67645;
-  --text-dark: #F0EBE5;
-  --text-light: #A89F97;
+  --primary: #4ade80;
+  --primary-dark: #22c55e;
+  --secondary: #FBBF24;
+  --text-dark: #FDFDFD;
+  --text-light: #D6D3D1;
   --bg-light: #121212;
-  --bg-hero: #1E1C1A;
-  --white: #1A1A1A;
-  --gray-200: #333333;
-  --gray-300: #4A4540;
-  --footer-bg: #0F1F15;
+  --bg-hero: #1C1A18;
+  --white: #1E1E1E;
+  --gray-200: #2D2D2D;
+  --gray-300: #404040;
+  --footer-bg: #1B241C;
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.5);
   --card-bg: #1A1A1A;
-  --input-bg: #222222;
+  --input-bg: #262626;
   --border-color: #333333;
   --navbar-bg: #1A1A1A;
 }
@@ -1784,13 +1784,17 @@ img {
   color: var(--text-dark);
 }
 
-[data-theme="dark"] .form-group input {
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select {
   background: var(--input-bg);
   border-color: var(--border-color);
   color: var(--text-dark);
 }
 
-[data-theme="dark"] .form-group input:focus {
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group textarea:focus,
+[data-theme="dark"] .form-group select:focus {
   background: var(--card-bg);
   border-color: var(--primary);
 }
@@ -1857,6 +1861,32 @@ img {
 [data-theme="dark"] .btn-secondary:hover {
   background: var(--text-dark);
   color: var(--bg-light);
+}
+
+[data-theme="dark"] .footer {
+  color: #D6D3D1;
+}
+
+[data-theme="dark"] .footer-brand h2,
+[data-theme="dark"] .footer-links h3,
+[data-theme="dark"] .footer-legal h3,
+[data-theme="dark"] .footer-contact h3 {
+  color: #FDFDFD;
+}
+
+[data-theme="dark"] .footer-brand p,
+[data-theme="dark"] .footer-links a,
+[data-theme="dark"] .footer-legal a,
+[data-theme="dark"] .footer-contact p,
+[data-theme="dark"] .footer-links li,
+[data-theme="dark"] .footer-legal li,
+[data-theme="dark"] .footer-bottom {
+  color: #D6D3D1;
+}
+
+[data-theme="dark"] .footer-links a:hover,
+[data-theme="dark"] .footer-legal a:hover {
+  color: var(--primary);
 }
 
 /* ====================================

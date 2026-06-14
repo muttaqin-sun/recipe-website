@@ -1,11 +1,32 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Bookmark } from 'lucide-react';
+import { getImageUrl } from '@/utils/imageUrl';
 
 const RecipeCard = ({ recipe }) => {
   const navigate = useNavigate();
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    const savedIds = JSON.parse(localStorage.getItem('saved_recipes') || '[]');
+    setIsSaved(savedIds.includes(recipe.id));
+  }, [recipe.id]);
+
+  const handleSaveRecipe = (e) => {
+    e.stopPropagation(); // Mencegah klik menyebar ke card (navigate)
+    const savedIds = JSON.parse(localStorage.getItem('saved_recipes') || '[]');
+    if (isSaved) {
+      const newIds = savedIds.filter(id => id !== recipe.id);
+      localStorage.setItem('saved_recipes', JSON.stringify(newIds));
+      setIsSaved(false);
+    } else {
+      savedIds.push(recipe.id);
+      localStorage.setItem('saved_recipes', JSON.stringify(savedIds));
+      setIsSaved(true);
+    }
+  };
 
   // Simulating a regional tag if not available (since original didn't have region, we use category or mock)
   const regionTag = recipe.category === 'Tradisional' ? 'Jawa' : 
@@ -26,7 +47,7 @@ const RecipeCard = ({ recipe }) => {
     }}>
       <div style={{ position: 'relative' }}>
         <img 
-          src={recipe.image} 
+          src={getImageUrl(recipe.image)} 
           alt={recipe.name} 
           style={{ 
             width: '100%', 
@@ -67,16 +88,21 @@ const RecipeCard = ({ recipe }) => {
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Clock size={14} /> {recipe.cookingTime || '30 menit'}
           </span>
-          <button style={{ 
-            background: 'none', 
-            border: 'none', 
-            cursor: 'pointer',
-            color: 'var(--text-light)',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '4px'
-          }}>
-            <Bookmark size={18} />
+          <button 
+            onClick={handleSaveRecipe}
+            title={isSaved ? "Hapus dari Favorit" : "Simpan Resep"}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer',
+              color: isSaved ? 'var(--primary)' : 'var(--text-light)',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '4px',
+              transition: 'color 0.2s'
+            }}
+          >
+            <Bookmark size={18} fill={isSaved ? 'currentColor' : 'none'} />
           </button>
         </div>
       </div>

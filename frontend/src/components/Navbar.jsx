@@ -46,8 +46,8 @@ const Navbar = () => {
           <a href="/#kategori" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Kategori <ChevronDown size={14} /></a>
           <a href="/#bahan" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Bahan <ChevronDown size={14} /></a>
           <a href="/#koleksi">Koleksi</a>
-          <a href="/#tips">Tips & Trik</a>
-          <a href="/#tentang">Tentang Kami</a>
+          <Link to="/tips">Tips & Trik</Link>
+          <Link to="/tentang">Tentang Kami</Link>
         </div>
 
         <div className="navbar-actions">

@@ -6,7 +6,6 @@ import Hero from '@/components/Hero';
 import RecipeList from '@/components/RecipeList';
 import ArticleSection from '@/components/ArticleSection';
 import Footer from '@/components/Footer';
-import { recipes } from '@/data/recipes';
 
 // Integration mockup fallback (use the local data for now, while building API link)
 // To fully fetch from API, we would replace recipes with fetched state here.
