@@ -62,7 +62,8 @@ const articlesData = [
 
 function seed() {
   const db = new Database(dbPath);
-  
+  db.exec('PRAGMA foreign_keys = OFF');
+
   try {
     // Pastikan ada user admin untuk menjadi author
     const admin = db.prepare('SELECT id FROM users WHERE role = ?').get('admin');

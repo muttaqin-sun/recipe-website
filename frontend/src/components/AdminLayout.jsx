@@ -5,7 +5,7 @@ import {
   LayoutDashboard, BookOpen, LayoutGrid, ShoppingBag,
   Users, MessageSquare, BarChart2, Settings,
   Inbox, Activity, Terminal, Search, Bell, ChevronDown,
-  Calendar, LogOut
+  Calendar, LogOut, FileText
 } from "lucide-react";
 import '../admin.css';
 
@@ -80,6 +80,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
               )}
             </li>
 
+            <li><Link to="/dashboard/admin/articles" className={`admin-menu-item ${isActive('/dashboard/admin/articles')}`}><FileText size={20} /> Artikel</Link></li>
             <li><Link to="/dashboard/admin/categories" className={`admin-menu-item ${isActive('/dashboard/admin/categories')}`}><LayoutGrid size={20} /> Kategori</Link></li>
             <li><Link to="/dashboard/admin/ingredients" className={`admin-menu-item ${isActive('/dashboard/admin/ingredients')}`}><ShoppingBag size={20} /> Bahan</Link></li>
             <li><Link to="/dashboard/admin/users" className={`admin-menu-item ${isActive('/dashboard/admin/users')}`}><Users size={20} /> Pengguna</Link></li>

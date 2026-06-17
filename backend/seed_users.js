@@ -25,7 +25,7 @@ async function seed() {
     insert.run('Administrator', 'admin@rasanusantara.id', adminPass, 'admin');
     console.log('Admin account created: admin@rasanusantara.id / admin123');
 
-    insert.run('User Biasa', 'user@email.com', userPass, 'user');
+    insert.run('Ilham Muttaqin', 'user@email.com', userPass, 'user');
     console.log('User account created: user@email.com / user123');
 
     console.log('Seeding completed successfully!');

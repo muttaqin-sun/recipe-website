@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const jwt = require('jsonwebtoken');
 
 exports.getAllArticles = async (req, res) => {
   try {
@@ -49,7 +50,11 @@ exports.createArticle = async (req, res) => {
     if (req.file) {
       image = '/uploads/' + req.file.filename;
     }
-    const date = new Date().toISOString().split('T')[0];
+    // Convert current UTC time to WIB (UTC+7)
+    const d = new Date();
+    const utcOffset = d.getTime() + (d.getTimezoneOffset() * 60000);
+    const wibTime = new Date(utcOffset + (3600000 * 7));
+    const date = wibTime.getFullYear() + '-' + String(wibTime.getMonth() + 1).padStart(2, '0') + '-' + String(wibTime.getDate()).padStart(2, '0');
     
     const [result] = await db.query(
       `INSERT INTO articles (author_id, title, summary, content, image, date, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -134,7 +139,13 @@ exports.approveArticle = async (req, res) => {
 
 exports.getArticleById = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM articles WHERE id = ?', [req.params.id]);
+    const [rows] = await db.query(
+      `SELECT a.*, u.name as author_name, u.avatar as author_avatar 
+       FROM articles a 
+       LEFT JOIN users u ON a.author_id = u.id 
+       WHERE a.id = ?`,
+      [req.params.id]
+    );
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Article not found' });
     }
@@ -146,7 +157,56 @@ exports.getArticleById = async (req, res) => {
       summary = parts[0].replace('EXCERPT: ', '');
       content = parts.slice(1).join('\n\n');
     }
-    article = { ...article, summary, content };
+
+    // Optional check for user_id via token
+    let userId = null;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      const token = req.headers.authorization.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch (e) {
+        // Token invalid or expired, ignore
+      }
+    }
+
+    // Fetch comments
+    const [comments] = await db.query(
+      `SELECT ac.*, u.name as user_name, u.avatar as user_avatar 
+       FROM article_comments ac 
+       JOIN users u ON ac.user_id = u.id 
+       WHERE ac.article_id = ? 
+       ORDER BY ac.created_at DESC`,
+      [req.params.id]
+    );
+
+    // Fetch likes count
+    const [likesCountRow] = await db.query(
+      'SELECT COUNT(*) as count FROM article_likes WHERE article_id = ?',
+      [req.params.id]
+    );
+    const likesCount = likesCountRow[0]?.count || 0;
+
+    // Fetch user liked status
+    let isLiked = false;
+    if (userId) {
+      const [userLike] = await db.query(
+        'SELECT 1 FROM article_likes WHERE user_id = ? AND article_id = ?',
+        [userId, req.params.id]
+      );
+      isLiked = userLike.length > 0;
+    }
+
+    article = { 
+      ...article, 
+      authorName: article.author_name,
+      authorAvatar: article.author_avatar,
+      summary, 
+      content,
+      comments,
+      likesCount,
+      isLiked
+    };
 
     res.json({ success: true, data: article });
   } catch (error) {
@@ -154,3 +214,39 @@ exports.getArticleById = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+exports.getUserLikedArticles = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT a.* FROM articles a 
+       JOIN article_likes al ON a.id = al.article_id 
+       WHERE al.user_id = ? ORDER BY al.created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error saat mengambil artikel yang disukai' });
+  }
+};
+
+exports.getUserCommentedArticles = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT ac.id as comment_id, ac.content, ac.created_at as comment_created_at, 
+              a.id, a.title, a.image, a.date 
+       FROM article_comments ac 
+       JOIN articles a ON ac.article_id = a.id 
+       WHERE ac.user_id = ? 
+       ORDER BY ac.created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error saat mengambil artikel yang dikomentari' });
+  }
+};
+

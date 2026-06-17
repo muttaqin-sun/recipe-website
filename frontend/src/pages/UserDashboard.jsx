@@ -15,7 +15,7 @@ import { getImageUrl } from '@/utils/imageUrl';
 import '../user-dashboard.css';
 
 const UserDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
 
   // Sidebar states
@@ -41,9 +41,25 @@ const UserDashboard = () => {
   const [userRecipes, setUserRecipes] = useState([]);
   const [userArticles, setUserArticles] = useState([]);
   const [savedRecipes, setSavedRecipes] = useState([]);
+  const [likedRecipes, setLikedRecipes] = useState([]);
+  const [likedArticles, setLikedArticles] = useState([]);
+  const [commentedRecipes, setCommentedRecipes] = useState([]);
+  const [commentedArticles, setCommentedArticles] = useState([]);
+  const [favoritTab, setFavoritTab] = useState('Resep');
+  const [komentarTab, setKomentarTab] = useState('Resep');
   const [profileTab, setProfileTab] = useState('Postingan Saya');
   const [editingId, setEditingId] = useState(null);
   const [isPostinganOpen, setIsPostinganOpen] = useState(false);
+
+  // Edit Profile Modal states
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [editProfileName, setEditProfileName] = useState('');
+  const [editProfileBio, setEditProfileBio] = useState('');
+  const [editProfileLocation, setEditProfileLocation] = useState('');
+  const [editProfileInstagram, setEditProfileInstagram] = useState('');
+  const [editProfileLoading, setEditProfileLoading] = useState(false);
+  const [editProfileError, setEditProfileError] = useState('');
+  const [editProfileSuccess, setEditProfileSuccess] = useState('');
 
   const handleMenuClick = (menu) => {
     if (menu === 'Buat Postingan') {
@@ -68,6 +84,39 @@ const UserDashboard = () => {
       }, 0);
     }
     setActiveMenu(menu);
+  };
+
+  const openEditProfileModal = () => {
+    setEditProfileName(user?.name || '');
+    setEditProfileBio(user?.bio || '');
+    setEditProfileLocation(user?.location || '');
+    setEditProfileInstagram(user?.instagram || '');
+    setEditProfileError('');
+    setEditProfileSuccess('');
+    setShowEditProfileModal(true);
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!editProfileName.trim()) {
+      setEditProfileError('Nama tidak boleh kosong.');
+      return;
+    }
+    setEditProfileLoading(true);
+    setEditProfileError('');
+    const result = await updateProfile({
+      name: editProfileName.trim(),
+      bio: editProfileBio,
+      location: editProfileLocation,
+      instagram: editProfileInstagram
+    });
+    setEditProfileLoading(false);
+    if (result.success) {
+      setEditProfileSuccess('Profil berhasil diperbarui!');
+      setTimeout(() => setShowEditProfileModal(false), 1200);
+    } else {
+      setEditProfileError(result.message || 'Gagal memperbarui profil.');
+    }
   };
 
   const handleEditClick = async (e, id) => {
@@ -166,48 +215,135 @@ const UserDashboard = () => {
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const userStr = localStorage.getItem('user');
-        const token = userStr ? JSON.parse(userStr).token : '';
-        
-        // Fetch user's own recipes (including pending)
-        if (token) {
-          const userRes = await fetch('http://127.0.0.1:5000/api/recipes/user/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const userData = await userRes.json();
-          if (userData.success) {
-            setUserRecipes(userData.data);
-          }
-          
-          const articleRes = await fetch('http://127.0.0.1:5000/api/articles/user/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const articleData = await articleRes.json();
-          if (articleData.success) {
-            setUserArticles(articleData.data);
-          }
-        }
-
-        // Fetch all approved recipes for saved recipes
-        const res = await fetch('http://127.0.0.1:5000/api/recipes');
-        const data = await res.json();
-        if (data.success) {
-          const savedIds = JSON.parse(localStorage.getItem('saved_recipes') || '[]');
-          const sRecipes = data.data.filter(r => savedIds.includes(r.id));
-          setSavedRecipes(sRecipes);
-        }
-      } catch (err) {
-        console.error(err);
+  const fetchOwnRecipes = async (token) => {
+    try {
+      const userRes = await fetch('http://127.0.0.1:5000/api/recipes/user/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const userData = await userRes.json();
+      if (userData.success) {
+        setUserRecipes(userData.data);
       }
-    };
-    
-    if (activeMenu === 'Profil Saya') {
-      fetchProfileData();
+    } catch (err) {
+      console.error(err);
     }
-  }, [activeMenu, user]);
+  };
+
+  const fetchOwnArticles = async (token) => {
+    try {
+      const articleRes = await fetch('http://127.0.0.1:5000/api/articles/user/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const articleData = await articleRes.json();
+      if (articleData.success) {
+        setUserArticles(articleData.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchSavedRecipes = async (token) => {
+    try {
+      const savedRes = await fetch('http://127.0.0.1:5000/api/recipes/user/saved', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const savedData = await savedRes.json();
+      if (savedData.success) {
+        setSavedRecipes(savedData.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchLikedRecipes = async (token) => {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/recipes/user/liked', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setLikedRecipes(data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchLikedArticles = async (token) => {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/articles/user/liked', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setLikedArticles(data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchCommentedRecipes = async (token) => {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/recipes/user/commented', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCommentedRecipes(data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchCommentedArticles = async (token) => {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/articles/user/commented', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCommentedArticles(data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    const token = userStr ? JSON.parse(userStr).token : '';
+    if (!token) return;
+
+    if (activeMenu === 'Profil Saya') {
+      if (profileTab === 'Postingan Saya') {
+        fetchOwnRecipes(token);
+      } else if (profileTab === 'Artikel Saya') {
+        fetchOwnArticles(token);
+      } else if (profileTab === 'Resep Disimpan') {
+        fetchSavedRecipes(token);
+      } else if (profileTab === 'Disukai') {
+        fetchLikedRecipes(token);
+        fetchLikedArticles(token);
+      } else if (profileTab === 'Komentar') {
+        fetchCommentedRecipes(token);
+        fetchCommentedArticles(token);
+      }
+    } else if (activeMenu === 'Koleksi Saya') {
+      fetchSavedRecipes(token);
+    } else if (activeMenu === 'Favorit') {
+      fetchLikedRecipes(token);
+      fetchLikedArticles(token);
+    } else if (activeMenu === 'Komentar') {
+      fetchCommentedRecipes(token);
+      fetchCommentedArticles(token);
+    } else if (activeMenu === 'Resep Saya') {
+      fetchOwnRecipes(token);
+    }
+  }, [activeMenu, profileTab, user]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -809,22 +945,24 @@ const UserDashboard = () => {
                   </div>
                   <div className="ud-profile-info">
                     <div className="ud-profile-name-row">
-                      <h2 className="ud-profile-name">Ilham Muttaqin</h2>
+                      <h2 className="ud-profile-name">{user.name || 'Ilham Muttaqin'}</h2>
                       <span className="ud-profile-badge">Food Content Creator</span>
                     </div>
                     <div className="ud-profile-handle">
-                      @ilhammuttaqin &nbsp;&middot;&nbsp; Bergabung sejak Mei 2024
+                      @{user.name ? user.name.toLowerCase().replace(/\s+/g, '') : 'ilhammuttaqin'} &nbsp;&middot;&nbsp; Bergabung sejak Mei 2024
                     </div>
                     <p className="ud-profile-bio">
-                      Pecinta kuliner nusantara dan penulis resep masakan rumahan sehari-hari.
+                      {user.bio || 'Pecinta kuliner nusantara dan penulis resep masakan rumahan sehari-hari.'}
                     </p>
                     <div className="ud-profile-links">
-                      <span className="ud-profile-link-item"><MapPin size={14} /> Yogyakarta, Indonesia</span>
-                      <span className="ud-profile-link-item"><Instagram size={14} /> instagram.com/ilhammuttaqin</span>
-                      <span className="ud-profile-link-item"><Mail size={14} /> ilham.muttaqin@email.com</span>
+                      {(user.location || user.location === '') && (
+                        <span className="ud-profile-link-item"><MapPin size={14} /> {user.location || 'Indonesia'}</span>
+                      )}
+                      <span className="ud-profile-link-item"><Instagram size={14} /> instagram.com/{user.instagram || (user.name ? user.name.toLowerCase().replace(/\s+/g, '') : 'username')}</span>
+                      <span className="ud-profile-link-item"><Mail size={14} /> {user.email}</span>
                     </div>
                   </div>
-                  <button className="ud-profile-edit-btn">Edit Profil</button>
+                  <button className="ud-profile-edit-btn" onClick={openEditProfileModal}>Edit Profil</button>
                 </div>
                 
                 <div className="ud-profile-stats">
@@ -871,28 +1009,30 @@ const UserDashboard = () => {
                   {userRecipes.length > 0 ? (
                     <div className="ud-profile-grid">
                       {userRecipes.map(recipe => (
-                        <Link to={`/resep/${recipe.id}`} key={recipe.id} className="ud-profile-card">
-                          <div className="ud-profile-card-img">
+                        <div key={recipe.id} className="ud-profile-card" style={{cursor: 'default'}}>
+                          <Link to={`/resep/${recipe.id}`} className="ud-profile-card-img" style={{display:'block'}}>
                             <img src={getImageUrl(recipe.image)} alt={recipe.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-                          </div>
+                          </Link>
                           <div className="ud-profile-card-content">
-                            <h4 className="ud-profile-card-title">
-                              {recipe.name}
-                              {recipe.status === 'pending' && <span style={{marginLeft:'8px', fontSize:'0.7rem', background:'#FFF3E0', color:'#E65100', padding:'2px 6px', borderRadius:'10px', verticalAlign:'middle', fontWeight:'normal'}}>Pending</span>}
-                            </h4>
+                            <Link to={`/resep/${recipe.id}`} style={{textDecoration:'none', color:'inherit'}}>
+                              <h4 className="ud-profile-card-title">
+                                {recipe.name}
+                                {recipe.status === 'pending' && <span style={{marginLeft:'8px', fontSize:'0.7rem', background:'#FFF3E0', color:'#E65100', padding:'2px 6px', borderRadius:'10px', verticalAlign:'middle', fontWeight:'normal'}}>Pending</span>}
+                              </h4>
+                            </Link>
                             <div className="ud-profile-card-meta">
                               <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Clock size={12} /> {recipe.cooking_time || recipe.cookingTime} menit</span>
                               <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Eye size={12} /> {Math.floor(Math.random() * 500) + 100}</span>
                             </div>
                             <div className="ud-profile-card-actions">
-                              <button onClick={(e) => handleEditClick(e, recipe.id)} style={{background:'none',border:'none',cursor:'pointer',color:'inherit',padding:'4px'}}>
-                                <Pencil size={16} title="Edit" />
+                              <button onClick={(e) => handleEditClick(e, recipe.id)} style={{background:'none',border:'none',cursor:'pointer',color:'inherit',padding:'4px'}} title="Edit Resep">
+                                <Pencil size={16} />
                               </button>
                               <Bookmark size={16} title="Simpan" />
                               <MessageSquare size={16} title="Komentar" />
                             </div>
                           </div>
-                        </Link>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -963,10 +1103,341 @@ const UserDashboard = () => {
                 </div>
               )}
 
-              {['Disukai', 'Komentar', 'Tentang Saya'].includes(profileTab) && (
+              {profileTab === 'Disukai' && (
+                <div>
+                  <h3 style={{fontSize: '1.2rem', marginBottom: '8px', color: 'var(--text-dark)'}}>Postingan Disukai</h3>
+                  <p style={{color: '#6B7280', fontSize: '0.9rem', marginBottom: '24px'}}>Kumpulan resep dan artikel yang kamu sukai.</p>
+                  
+                  <div className="ud-profile-tabs" style={{ marginBottom: '24px' }}>
+                    <div className={`ud-profile-tab ${favoritTab === 'Resep' ? 'active' : ''}`} onClick={() => setFavoritTab('Resep')}>
+                      Resep ({likedRecipes.length})
+                    </div>
+                    <div className={`ud-profile-tab ${favoritTab === 'Artikel' ? 'active' : ''}`} onClick={() => setFavoritTab('Artikel')}>
+                      Artikel ({likedArticles.length})
+                    </div>
+                  </div>
+
+                  {favoritTab === 'Resep' ? (
+                    likedRecipes.length > 0 ? (
+                      <div className="ud-profile-grid">
+                        {likedRecipes.map(recipe => (
+                          <Link to={`/resep/${recipe.id}`} key={recipe.id} className="ud-profile-card">
+                            <div className="ud-profile-card-img">
+                              <img src={getImageUrl(recipe.image)} alt={recipe.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                            </div>
+                            <div className="ud-profile-card-content">
+                              <h4 className="ud-profile-card-title">{recipe.name}</h4>
+                              <div className="ud-profile-card-meta">
+                                <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Clock size={12} /> {recipe.cooking_time || recipe.cookingTime}</span>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada resep yang disukai.</div>
+                    )
+                  ) : (
+                    likedArticles.length > 0 ? (
+                      <div className="ud-profile-grid">
+                        {likedArticles.map(article => (
+                          <Link to={`/artikel/${article.id}`} key={article.id} className="ud-profile-card">
+                            <div className="ud-profile-card-img">
+                              <img src={getImageUrl(article.image)} alt={article.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                            </div>
+                            <div className="ud-profile-card-content">
+                              <h4 className="ud-profile-card-title">{article.title}</h4>
+                              <div className="ud-profile-card-meta">
+                                <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><FileText size={12} /> Artikel</span>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada artikel yang disukai.</div>
+                    )
+                  )}
+                </div>
+              )}
+
+              {profileTab === 'Komentar' && (
+                <div>
+                  <h3 style={{fontSize: '1.2rem', marginBottom: '8px', color: 'var(--text-dark)'}}>Komentar Saya</h3>
+                  <p style={{color: '#6B7280', fontSize: '0.9rem', marginBottom: '24px'}}>Kumpulan komentar yang telah kamu kirimkan.</p>
+                  
+                  <div className="ud-profile-tabs" style={{ marginBottom: '24px' }}>
+                    <div className={`ud-profile-tab ${komentarTab === 'Resep' ? 'active' : ''}`} onClick={() => setKomentarTab('Resep')}>
+                      Resep ({commentedRecipes.length})
+                    </div>
+                    <div className={`ud-profile-tab ${komentarTab === 'Artikel' ? 'active' : ''}`} onClick={() => setKomentarTab('Artikel')}>
+                      Artikel ({commentedArticles.length})
+                    </div>
+                  </div>
+
+                  {komentarTab === 'Resep' ? (
+                    commentedRecipes.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {commentedRecipes.map(comment => (
+                          <div key={comment.comment_id} style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.85rem', color: '#6B7280' }}>
+                                {new Date(comment.comment_created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <p style={{ fontStyle: 'italic', color: '#374151', fontSize: '0.95rem', background: '#F9FAFB', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid var(--primary)' }}>
+                              "{comment.content}"
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                              <span style={{ fontSize: '0.85rem', color: '#4B5563', fontWeight: 'bold' }}>Pada Resep:</span>
+                              <Link to={`/resep/${comment.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: '#E8F5E9', color: '#2E7D32', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+                                <img src={getImageUrl(comment.image)} alt={comment.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                                {comment.name}
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada komentar pada resep.</div>
+                    )
+                  ) : (
+                    commentedArticles.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {commentedArticles.map(comment => (
+                          <div key={comment.comment_id} style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.85rem', color: '#6B7280' }}>
+                                {new Date(comment.comment_created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <p style={{ fontStyle: 'italic', color: '#374151', fontSize: '0.95rem', background: '#F9FAFB', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid var(--primary)' }}>
+                              "{comment.content}"
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                              <span style={{ fontSize: '0.85rem', color: '#4B5563', fontWeight: 'bold' }}>Pada Artikel:</span>
+                              <Link to={`/artikel/${comment.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: '#FFF3E0', color: '#E65100', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+                                <img src={getImageUrl(comment.image)} alt={comment.title} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                                {comment.title}
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada komentar pada artikel.</div>
+                    )
+                  )}
+                </div>
+              )}
+
+              {profileTab === 'Tentang Saya' && (
                 <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>
                   <p>Halaman ini belum tersedia. Menunggu pengembangan berikutnya !.</p>
                 </div>
+              )}
+            </div>
+          ) : activeMenu === 'Resep Saya' ? (
+            <div>
+              <div className="ud-header">
+                <div className="ud-header-top">
+                  <ArrowLeft className="ud-back-icon" size={24} onClick={() => navigate(-1)} />
+                  <h1>Resep Saya</h1>
+                </div>
+                <p>Kelola resep-resep yang telah kamu publikasikan.</p>
+              </div>
+
+              {userRecipes.length > 0 ? (
+                <div className="ud-profile-grid">
+                  {userRecipes.map(recipe => (
+                    <Link to={`/resep/${recipe.id}`} key={recipe.id} className="ud-profile-card">
+                      <div className="ud-profile-card-img">
+                        <img src={getImageUrl(recipe.image)} alt={recipe.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                      </div>
+                      <div className="ud-profile-card-content">
+                        <h4 className="ud-profile-card-title">
+                          {recipe.name}
+                          {recipe.status === 'pending' && <span style={{marginLeft:'8px', fontSize:'0.7rem', background:'#FFF3E0', color:'#E65100', padding:'2px 6px', borderRadius:'10px', verticalAlign:'middle', fontWeight:'normal'}}>Pending</span>}
+                        </h4>
+                        <div className="ud-profile-card-meta">
+                          <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Clock size={12} /> {recipe.cooking_time || recipe.cookingTime}</span>
+                          <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Eye size={12} /> {Math.floor(Math.random() * 500) + 100}</span>
+                        </div>
+                        <div className="ud-profile-card-actions">
+                          <button onClick={(e) => handleEditClick(e, recipe.id)} style={{background:'none',border:'none',cursor:'pointer',color:'inherit',padding:'4px'}}>
+                            <Pencil size={16} title="Edit" />
+                          </button>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada resep yang diposting.</div>
+              )}
+            </div>
+          ) : activeMenu === 'Koleksi Saya' ? (
+            <div>
+              <div className="ud-header">
+                <div className="ud-header-top">
+                  <ArrowLeft className="ud-back-icon" size={24} onClick={() => navigate(-1)} />
+                  <h1>Koleksi Resep Saya</h1>
+                </div>
+                <p>Resep kuliner Nusantara yang telah kamu simpan.</p>
+              </div>
+
+              {savedRecipes.length > 0 ? (
+                <div className="ud-profile-grid">
+                  {savedRecipes.map(recipe => (
+                    <Link to={`/resep/${recipe.id}`} key={recipe.id} className="ud-profile-card">
+                      <div className="ud-profile-card-img">
+                        <img src={getImageUrl(recipe.image)} alt={recipe.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                      </div>
+                      <div className="ud-profile-card-content">
+                        <h4 className="ud-profile-card-title">{recipe.name}</h4>
+                        <div className="ud-profile-card-meta">
+                          <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Clock size={12} /> {recipe.cooking_time || recipe.cookingTime}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada resep yang disimpan.</div>
+              )}
+            </div>
+          ) : activeMenu === 'Favorit' ? (
+            <div>
+              <div className="ud-header">
+                <div className="ud-header-top">
+                  <ArrowLeft className="ud-back-icon" size={24} onClick={() => navigate(-1)} />
+                  <h1>Postingan Favorit</h1>
+                </div>
+                <p>Resep dan artikel kuliner yang paling kamu sukai.</p>
+              </div>
+
+              <div className="ud-profile-tabs" style={{ marginBottom: '24px' }}>
+                <div className={`ud-profile-tab ${favoritTab === 'Resep' ? 'active' : ''}`} onClick={() => setFavoritTab('Resep')}>
+                  Resep Favorit ({likedRecipes.length})
+                </div>
+                <div className={`ud-profile-tab ${favoritTab === 'Artikel' ? 'active' : ''}`} onClick={() => setFavoritTab('Artikel')}>
+                  Artikel Favorit ({likedArticles.length})
+                </div>
+              </div>
+
+              {favoritTab === 'Resep' ? (
+                likedRecipes.length > 0 ? (
+                  <div className="ud-profile-grid">
+                    {likedRecipes.map(recipe => (
+                      <Link to={`/resep/${recipe.id}`} key={recipe.id} className="ud-profile-card">
+                        <div className="ud-profile-card-img">
+                          <img src={getImageUrl(recipe.image)} alt={recipe.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                        </div>
+                        <div className="ud-profile-card-content">
+                          <h4 className="ud-profile-card-title">{recipe.name}</h4>
+                          <div className="ud-profile-card-meta">
+                            <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><Clock size={12} /> {recipe.cooking_time || recipe.cookingTime}</span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada resep yang disukai.</div>
+                )
+              ) : (
+                likedArticles.length > 0 ? (
+                  <div className="ud-profile-grid">
+                    {likedArticles.map(article => (
+                      <Link to={`/artikel/${article.id}`} key={article.id} className="ud-profile-card">
+                        <div className="ud-profile-card-img">
+                          <img src={getImageUrl(article.image)} alt={article.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                        </div>
+                        <div className="ud-profile-card-content">
+                          <h4 className="ud-profile-card-title">{article.title}</h4>
+                          <div className="ud-profile-card-meta">
+                            <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}><FileText size={12} /> Artikel</span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada artikel yang disukai.</div>
+                )
+              )}
+            </div>
+          ) : activeMenu === 'Komentar' ? (
+            <div>
+              <div className="ud-header">
+                <div className="ud-header-top">
+                  <ArrowLeft className="ud-back-icon" size={24} onClick={() => navigate(-1)} />
+                  <h1>Komentar Saya</h1>
+                </div>
+                <p>Riwayat tanggapan dan masukan yang telah kamu berikan.</p>
+              </div>
+
+              <div className="ud-profile-tabs" style={{ marginBottom: '24px' }}>
+                <div className={`ud-profile-tab ${komentarTab === 'Resep' ? 'active' : ''}`} onClick={() => setKomentarTab('Resep')}>
+                  Komentar Resep ({commentedRecipes.length})
+                </div>
+                <div className={`ud-profile-tab ${komentarTab === 'Artikel' ? 'active' : ''}`} onClick={() => setKomentarTab('Artikel')}>
+                  Komentar Artikel ({commentedArticles.length})
+                </div>
+              </div>
+
+              {komentarTab === 'Resep' ? (
+                commentedRecipes.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {commentedRecipes.map(comment => (
+                      <div key={comment.comment_id} style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#6B7280' }}>
+                            {new Date(comment.comment_created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p style={{ fontStyle: 'italic', color: '#374151', fontSize: '0.95rem', background: '#F9FAFB', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid var(--primary)' }}>
+                          "{comment.content}"
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#4B5563', fontWeight: 'bold' }}>Pada Resep:</span>
+                          <Link to={`/resep/${comment.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: '#E8F5E9', color: '#2E7D32', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+                            <img src={getImageUrl(comment.image)} alt={comment.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                            {comment.name}
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada komentar pada resep.</div>
+                )
+              ) : (
+                commentedArticles.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {commentedArticles.map(comment => (
+                      <div key={comment.comment_id} style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#6B7280' }}>
+                            {new Date(comment.comment_created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p style={{ fontStyle: 'italic', color: '#374151', fontSize: '0.95rem', background: '#F9FAFB', padding: '12px 16px', borderRadius: '8px', borderLeft: '4px solid var(--primary)' }}>
+                          "{comment.content}"
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#4B5563', fontWeight: 'bold' }}>Pada Artikel:</span>
+                          <Link to={`/artikel/${comment.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', background: '#FFF3E0', color: '#E65100', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+                            <img src={getImageUrl(comment.image)} alt={comment.title} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                            {comment.title}
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{textAlign: 'center', padding: '40px', color: '#6B7280'}}>Belum ada komentar pada artikel.</div>
+                )
               )}
             </div>
           ) : (
@@ -977,6 +1448,146 @@ const UserDashboard = () => {
           )}
         </main>
       </div>
+
+      {/* ===== EDIT PROFILE MODAL ===== */}
+      {showEditProfileModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.55)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }} onClick={() => setShowEditProfileModal(false)}>
+          <div style={{
+            background: 'var(--card-bg)', borderRadius: '20px',
+            padding: '36px', width: '100%', maxWidth: '480px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+            border: '1px solid var(--border-color)',
+            position: 'relative'
+          }} onClick={e => e.stopPropagation()}>
+
+            {/* Close button */}
+            <button onClick={() => setShowEditProfileModal(false)} style={{
+              position: 'absolute', top: '16px', right: '16px',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--text-light)', padding: '4px'
+            }}>
+              <X size={22} />
+            </button>
+
+            <h2 style={{ margin: '0 0 4px 0', fontSize: '1.4rem', color: 'var(--text-dark)' }}>Edit Profil</h2>
+            <p style={{ margin: '0 0 24px 0', fontSize: '0.9rem', color: 'var(--text-light)' }}>Perbarui informasi profil akun Anda.</p>
+
+            {editProfileError && (
+              <div style={{ padding: '10px 14px', background: '#FEE2E2', color: '#B91C1C', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px' }}>
+                {editProfileError}
+              </div>
+            )}
+            {editProfileSuccess && (
+              <div style={{ padding: '10px 14px', background: '#D1FAE5', color: '#065F46', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px' }}>
+                {editProfileSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-dark)' }}>Nama Lengkap *</label>
+                <input
+                  type="text"
+                  value={editProfileName}
+                  onChange={e => setEditProfileName(e.target.value)}
+                  placeholder="Nama lengkap Anda"
+                  required
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    border: '1px solid var(--border-color)', outline: 'none',
+                    fontSize: '0.95rem', background: 'var(--bg-light)',
+                    color: 'var(--text-dark)', boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-dark)' }}>Bio</label>
+                <textarea
+                  value={editProfileBio}
+                  onChange={e => setEditProfileBio(e.target.value)}
+                  placeholder="Ceritakan sedikit tentang diri Anda..."
+                  rows={3}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    border: '1px solid var(--border-color)', outline: 'none',
+                    fontSize: '0.95rem', background: 'var(--bg-light)',
+                    color: 'var(--text-dark)', resize: 'vertical', boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-dark)' }}>
+                  <MapPin size={14} style={{display:'inline', marginRight:'4px'}} />Lokasi
+                </label>
+                <input
+                  type="text"
+                  value={editProfileLocation}
+                  onChange={e => setEditProfileLocation(e.target.value)}
+                  placeholder="Kota, Provinsi"
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    border: '1px solid var(--border-color)', outline: 'none',
+                    fontSize: '0.95rem', background: 'var(--bg-light)',
+                    color: 'var(--text-dark)', boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-dark)' }}>
+                  <Instagram size={14} style={{display:'inline', marginRight:'4px'}} />Instagram
+                </label>
+                <input
+                  type="text"
+                  value={editProfileInstagram}
+                  onChange={e => setEditProfileInstagram(e.target.value)}
+                  placeholder="username (tanpa @)"
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: '10px',
+                    border: '1px solid var(--border-color)', outline: 'none',
+                    fontSize: '0.95rem', background: 'var(--bg-light)',
+                    color: 'var(--text-dark)', boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditProfileModal(false)}
+                  style={{
+                    flex: 1, padding: '12px', borderRadius: '100px',
+                    border: '1px solid var(--border-color)', background: 'transparent',
+                    color: 'var(--text-dark)', fontWeight: '600', cursor: 'pointer', fontSize: '0.95rem'
+                  }}
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={editProfileLoading}
+                  style={{
+                    flex: 1, padding: '12px', borderRadius: '100px',
+                    border: 'none', background: 'var(--primary)',
+                    color: 'white', fontWeight: '600', cursor: editProfileLoading ? 'not-allowed' : 'pointer',
+                    fontSize: '0.95rem', opacity: editProfileLoading ? 0.8 : 1
+                  }}
+                >
+                  {editProfileLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

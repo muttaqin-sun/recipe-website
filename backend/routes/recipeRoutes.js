@@ -13,6 +13,9 @@ router.get('/admin/all', protect, authorizeAdmin, recipeController.getAllRecipes
 // User routes
 router.post('/', protect, upload.single('image'), recipeController.createRecipe);
 router.get('/user/me', protect, recipeController.getUserRecipes);
+router.get('/user/saved', protect, recipeController.getUserSavedRecipes);
+router.get('/user/liked', protect, recipeController.getUserLikedRecipes);
+router.get('/user/commented', protect, recipeController.getUserCommentedRecipes);
 
 // Dynamic routes
 router.get('/:id', recipeController.getRecipeById);

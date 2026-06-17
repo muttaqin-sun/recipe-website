@@ -4,27 +4,58 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Bookmark } from 'lucide-react';
 import { getImageUrl } from '@/utils/imageUrl';
+import { useAuth } from '@/context/AuthContext';
 
 const RecipeCard = ({ recipe }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    const savedIds = JSON.parse(localStorage.getItem('saved_recipes') || '[]');
-    setIsSaved(savedIds.includes(recipe.id));
-  }, [recipe.id]);
+    const checkSaved = async () => {
+      if (user) {
+        try {
+          const res = await fetch(`http://127.0.0.1:5000/api/recipes/user/saved`, {
+            headers: { 'Authorization': `Bearer ${user.token}` }
+          });
+          const data = await res.json();
+          if (data.success) {
+            const isRecipeSaved = data.data.some(r => r.id === recipe.id);
+            setIsSaved(isRecipeSaved);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        const savedIds = JSON.parse(localStorage.getItem('saved_recipes') || '[]');
+        setIsSaved(savedIds.includes(recipe.id));
+      }
+    };
+    checkSaved();
+  }, [recipe.id, user]);
 
-  const handleSaveRecipe = (e) => {
+  const handleSaveRecipe = async (e) => {
     e.stopPropagation(); // Mencegah klik menyebar ke card (navigate)
-    const savedIds = JSON.parse(localStorage.getItem('saved_recipes') || '[]');
-    if (isSaved) {
-      const newIds = savedIds.filter(id => id !== recipe.id);
-      localStorage.setItem('saved_recipes', JSON.stringify(newIds));
-      setIsSaved(false);
-    } else {
-      savedIds.push(recipe.id);
-      localStorage.setItem('saved_recipes', JSON.stringify(savedIds));
-      setIsSaved(true);
+    if (!user) {
+      alert('Silakan login terlebih dahulu untuk menyimpan resep.');
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/interactions/recipes/${recipe.id}/save`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsSaved(!isSaved);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 

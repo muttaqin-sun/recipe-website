@@ -12,6 +12,14 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
     
+    // Validasi Password: minimal 8 karakter, ada huruf dan angka
+    if (!password || password.length < 8 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Kata sandi harus minimal 8 karakter dan merupakan kombinasi huruf dan angka.' 
+      });
+    }
+
     // Check if user exists
     const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (existingUsers.length > 0) {
@@ -39,6 +47,9 @@ exports.register = async (req, res) => {
         name,
         email,
         role: assignRole,
+        bio: '',
+        location: '',
+        instagram: '',
         token
       }
     });
@@ -73,6 +84,9 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        bio: user.bio || '',
+        location: user.location || '',
+        instagram: user.instagram || '',
         token
       }
     });
@@ -81,3 +95,50 @@ exports.login = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error during login' });
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, bio, location, instagram } = req.body;
+
+    // Validate required field
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Nama tidak boleh kosong.' });
+    }
+
+    // Check columns exist — profile columns may not exist yet, add them gracefully
+    // Update user record
+    await db.query(
+      'UPDATE users SET name = ?, bio = ?, location = ?, instagram = ? WHERE id = ?',
+      [name.trim(), bio || '', location || '', instagram || '', userId]
+    );
+
+    // Fetch updated user data to return to client
+    const [rows] = await db.query('SELECT id, name, email, role, bio, location, instagram FROM users WHERE id = ?', [userId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User tidak ditemukan.' });
+    }
+
+    const updatedUser = rows[0];
+    const token = generateToken(updatedUser.id, updatedUser.role);
+
+    res.json({
+      success: true,
+      message: 'Profil berhasil diperbarui.',
+      data: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        bio: updatedUser.bio,
+        location: updatedUser.location,
+        instagram: updatedUser.instagram,
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ success: false, message: 'Server error saat memperbarui profil.' });
+  }
+};
+

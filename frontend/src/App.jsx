@@ -7,6 +7,7 @@ import RootLayout from './components/Layout';
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import RecipeDetail from './pages/RecipeDetail';
 import ArticleDetail from './pages/ArticleDetail';
 import TipsTrik from './pages/TipsTrik';
@@ -24,6 +25,7 @@ import AdminSettings from './pages/AdminSettings';
 import AdminInbox from './pages/AdminInbox';
 import AdminActivities from './pages/AdminActivities';
 import AdminSystemLogs from './pages/AdminSystemLogs';
+import AdminArticles from './pages/AdminArticles';
 
 function App() {
   return (
@@ -31,6 +33,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/daftar" element={<Register />} />
         <Route path="/resep/:id" element={<RecipeDetail />} />
         <Route path="/artikel/:id" element={<ArticleDetail />} />
         <Route path="/tips" element={<TipsTrik />} />
@@ -39,6 +42,7 @@ function App() {
         <Route path="/dashboard/user/profile" element={<UserProfile />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
         <Route path="/dashboard/admin/recipes" element={<AdminRecipes />} />
+        <Route path="/dashboard/admin/articles" element={<AdminArticles />} />
         <Route path="/dashboard/admin/users" element={<AdminUsers />} />
         <Route path="/dashboard/admin/categories" element={<AdminCategories />} />
         <Route path="/dashboard/admin/ingredients" element={<AdminIngredients />} />

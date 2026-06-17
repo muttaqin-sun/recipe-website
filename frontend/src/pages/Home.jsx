@@ -1,6 +1,7 @@
 
 'use client';
 import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import RecipeList from '@/components/RecipeList';
@@ -15,6 +16,10 @@ export default function Home() {
   const [dataRecipes, setDataRecipes] = useState([]);
   const [dataArticles, setDataArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  const query = searchParams.get('search') || '';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,13 +55,45 @@ export default function Home() {
     );
   }
 
+  const filteredRecipes = query 
+    ? dataRecipes.filter(r => 
+        r.name.toLowerCase().includes(query.toLowerCase()) || 
+        (r.category && r.category.toLowerCase().includes(query.toLowerCase())) ||
+        (r.description && r.description.toLowerCase().includes(query.toLowerCase()))
+      )
+    : dataRecipes;
+
+  const filteredArticles = query
+    ? dataArticles.filter(a => 
+        a.title.toLowerCase().includes(query.toLowerCase()) || 
+        (a.content && a.content.toLowerCase().includes(query.toLowerCase()))
+      )
+    : dataArticles;
+
+  // Cek jika ada pencarian dan kita perlu mengarahkan otomatis
+  if (query) {
+    const exactRecipeMatch = dataRecipes.find(r => r.name.toLowerCase() === query.toLowerCase());
+    if (exactRecipeMatch) {
+      navigate(`/resep/${exactRecipeMatch.id}`, { replace: true });
+      return null;
+    } else if (filteredRecipes.length === 1 && filteredArticles.length === 0) {
+      navigate(`/resep/${filteredRecipes[0].id}`, { replace: true });
+      return null;
+    }
+  }
+
   return (
     <div className="app-container">
       <Navbar />
       <main>
         <Hero />
-        <RecipeList recipes={dataRecipes} />
-        <ArticleSection articles={dataArticles} />
+        {query && (
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <h2>Hasil Pencarian untuk: "{query}"</h2>
+          </div>
+        )}
+        <RecipeList recipes={filteredRecipes} />
+        <ArticleSection articles={filteredArticles} />
       </main>
       <Footer />
     </div>

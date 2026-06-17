@@ -30,7 +30,7 @@ const Login = () => {
       if (loggedUser.role === 'admin') {
         navigate('/dashboard/admin');
       } else {
-        navigate('/dashboard/user');
+        navigate('/');
       }
     } else {
       setError('Kredensial tidak cocok. Gunakan admin@rasanusantara.id (admin) atau user@email.com (user).');

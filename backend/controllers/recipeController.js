@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const jwt = require('jsonwebtoken');
 
 exports.getAllRecipes = async (req, res) => {
   try {
@@ -50,7 +51,7 @@ exports.createRecipe = async (req, res) => {
       image = '/uploads/' + req.file.filename;
     }
 
-    const insertRecipe = `INSERT INTO recipes (author_id, name, category, image, cooking_time, difficulty, description, status, origin, dish_type, suitable_for, portions, prep_time, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const insertRecipe = `INSERT INTO recipes (author_id, name, category, image, cooking_time, difficulty, description, status, origin, dish_type, suitable_for, portions, prep_time, tags, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '+7 hours'))`;
     const [result] = await db.query(insertRecipe, [
       author_id, name, category, image, 
       parseInt(cooking_time) || 30, difficulty, description, status,
@@ -98,7 +99,13 @@ exports.approveRecipe = async (req, res) => {
 
 exports.getRecipeById = async (req, res) => {
   try {
-    const [recipe] = await db.query('SELECT * FROM recipes WHERE id = ?', [req.params.id]);
+    const [recipe] = await db.query(
+      `SELECT r.*, u.name as author_name, u.avatar as author_avatar 
+       FROM recipes r 
+       LEFT JOIN users u ON r.author_id = u.id 
+       WHERE r.id = ?`,
+      [req.params.id]
+    );
     if (recipe.length === 0) {
       return res.status(404).json({ success: false, message: 'Recipe not found' });
     }
@@ -107,12 +114,67 @@ exports.getRecipeById = async (req, res) => {
     const [ingredients] = await db.query('SELECT * FROM recipe_ingredients WHERE recipe_id = ?', [req.params.id]);
     const [steps] = await db.query('SELECT * FROM recipe_steps WHERE recipe_id = ? ORDER BY step_number ASC', [req.params.id]);
     
+    // Optional check for user_id via token
+    let userId = null;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      const token = req.headers.authorization.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch (e) {
+        // Token invalid or expired, ignore
+      }
+    }
+
+    // Fetch comments
+    const [comments] = await db.query(
+      `SELECT rc.*, u.name as user_name, u.avatar as user_avatar 
+       FROM recipe_comments rc 
+       JOIN users u ON rc.user_id = u.id 
+       WHERE rc.recipe_id = ? 
+       ORDER BY rc.created_at DESC`,
+      [req.params.id]
+    );
+
+    // Fetch likes count
+    const [likesCountRow] = await db.query(
+      'SELECT COUNT(*) as count FROM recipe_likes WHERE recipe_id = ?',
+      [req.params.id]
+    );
+    const likesCount = likesCountRow[0]?.count || 0;
+
+    // Fetch user liked status
+    let isLiked = false;
+    if (userId) {
+      const [userLike] = await db.query(
+        'SELECT 1 FROM recipe_likes WHERE user_id = ? AND recipe_id = ?',
+        [userId, req.params.id]
+      );
+      isLiked = userLike.length > 0;
+    }
+
+    // Fetch user saved status
+    let isSaved = false;
+    if (userId) {
+      const [userSave] = await db.query(
+        'SELECT 1 FROM saved_recipes WHERE user_id = ? AND recipe_id = ?',
+        [userId, req.params.id]
+      );
+      isSaved = userSave.length > 0;
+    }
+
     // Aggregate result
     const detailedRecipe = {
       ...recipe[0],
       cookingTime: recipe[0].cooking_time + ' menit',
+      authorName: recipe[0].author_name,
+      authorAvatar: recipe[0].author_avatar,
       ingredients: ingredients.map(i => i.ingredient),
-      steps: steps.map(s => s.instruction)
+      steps: steps.map(s => s.instruction),
+      comments: comments,
+      likesCount: likesCount,
+      isLiked: isLiked,
+      isSaved: isSaved
     };
     
     res.json({ success: true, data: detailedRecipe });
@@ -215,3 +277,78 @@ exports.deleteRecipe = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error saat menghapus resep' });
   }
 };
+
+exports.getUserSavedRecipes = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT r.* FROM recipes r 
+       JOIN saved_recipes sr ON r.id = sr.recipe_id 
+       WHERE sr.user_id = ? ORDER BY sr.created_at DESC`,
+      [req.user.id]
+    );
+
+    // Map snake_case from DB to camelCase for Frontend
+    const recipes = rows.map(r => ({
+      ...r,
+      cookingTime: r.cooking_time + ' menit'
+    }));
+
+    res.json({ success: true, data: recipes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error saat mengambil resep yang disimpan' });
+  }
+};
+
+exports.getUserLikedRecipes = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT r.* FROM recipes r 
+       JOIN recipe_likes rl ON r.id = rl.recipe_id 
+       WHERE rl.user_id = ? ORDER BY rl.created_at DESC`,
+      [req.user.id]
+    );
+
+    const recipes = rows.map(r => ({
+      ...r,
+      cookingTime: r.cooking_time + ' menit'
+    }));
+
+    res.json({ success: true, data: recipes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error saat mengambil resep yang disukai' });
+  }
+};
+
+exports.getUserCommentedRecipes = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT rc.id as comment_id, rc.content, rc.created_at as comment_created_at, 
+              r.id, r.name, r.image, r.cooking_time, r.difficulty, r.description 
+       FROM recipe_comments rc 
+       JOIN recipes r ON rc.recipe_id = r.id 
+       WHERE rc.user_id = ? 
+       ORDER BY rc.created_at DESC`,
+      [req.user.id]
+    );
+
+    const commented = rows.map(r => ({
+      comment_id: r.comment_id,
+      content: r.content,
+      comment_created_at: r.comment_created_at,
+      id: r.id,
+      name: r.name,
+      image: r.image,
+      cookingTime: r.cooking_time + ' menit',
+      difficulty: r.difficulty,
+      description: r.description
+    }));
+
+    res.json({ success: true, data: commented });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error saat mengambil resep yang dikomentari' });
+  }
+};
+

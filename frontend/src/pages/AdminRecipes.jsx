@@ -157,10 +157,11 @@ const AdminRecipes = () => {
                     )}
                   </td>
                   <td>
-                    {recipe.status === 'pending' && (
-                      <button onClick={() => handleApprove(recipe.id)} className="btn btn-primary" style={{fontSize: '0.7rem', padding: '4px 8px', marginRight: '8px'}}>Approve</button>
+                    {recipe.status === 'pending' ? (
+                      <button className="icon-btn" onClick={() => handleApprove(recipe.id)} style={{width: '32px', height: '32px', marginRight: '8px'}} title="Setujui Resep (Approve)"><Edit size={14} /></button>
+                    ) : (
+                      <button className="icon-btn" onClick={() => setEditingRecipe(recipe)} style={{width: '32px', height: '32px'}} title="Edit"><Edit size={14} /></button>
                     )}
-                    <button className="icon-btn" onClick={() => setEditingRecipe(recipe)} style={{width: '32px', height: '32px'}} title="Edit"><Edit size={14} /></button>
                     <button className="icon-btn" onClick={() => handleDelete(recipe.id)} style={{width: '32px', height: '32px', marginLeft: '8px'}} title="Hapus"><Trash2 size={14} color="red" /></button>
                   </td>
                 </tr>

@@ -31,35 +31,79 @@ const chartData = [
 ];
 
 const AdminDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [dataRecipes, setDataRecipes] = useState([]);
+  const [stats, setStats] = useState(null);
+
+  const fetchRecipesAndStats = async () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = userStr ? JSON.parse(userStr).token : '';
+
+      // Fetch recipes
+      const resRecipes = await fetch('http://127.0.0.1:5000/api/recipes/admin/all', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const dataRecipesJson = await resRecipes.json();
+      if (dataRecipesJson.success) {
+        setDataRecipes(dataRecipesJson.data);
+      }
+
+      // Fetch stats
+      const resStats = await fetch('http://127.0.0.1:5000/api/admin/stats', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const dataStatsJson = await resStats.json();
+      if (dataStatsJson.success) {
+        setStats(dataStatsJson.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
     if (!user || user.role !== "admin") {
       navigate("/login");
+    } else {
+      fetchRecipesAndStats();
     }
-
-    // Ambil data resep (menggunakan API)
-    const userStr = localStorage.getItem('user');
-    const token = userStr ? JSON.parse(userStr).token : '';
-
-    fetch('http://127.0.0.1:5000/api/recipes/admin/all', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          setDataRecipes(res.data);
-        } else {
-          setDataRecipes([]);
-        }
-      })
-      .catch(() => {
-        setDataRecipes([]);
-      });
   }, [user, navigate]);
+
+  const handleApprove = async (id) => {
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = userStr ? JSON.parse(userStr).token : '';
+      const res = await fetch(`http://127.0.0.1:5000/api/recipes/${id}/approve`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchRecipesAndStats();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleReject = async (id) => {
+    if (!window.confirm("Yakin ingin menolak/menghapus resep ini?")) return;
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = userStr ? JSON.parse(userStr).token : '';
+      const res = await fetch(`http://127.0.0.1:5000/api/recipes/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchRecipesAndStats();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   if (!user) return null;
 
@@ -92,32 +136,32 @@ const AdminDashboard = () => {
             <div className="metric-icon-box green"><ImageIcon size={24} /></div>
             <div className="metric-details">
               <h3>Total Resep</h3>
-              <h2>1.248</h2>
-              <div className="metric-trend up">↑ 12.5% <span className="text">dari minggu lalu</span></div>
+              <h2>{stats?.totalRecipes ?? 0}</h2>
+              <div className="metric-trend up">Aktif di DB</div>
             </div>
           </div>
           <div className="admin-metric-card-new">
             <div className="metric-icon-box orange"><Users size={24} /></div>
             <div className="metric-details">
               <h3>Total Pengguna</h3>
-              <h2>2.842</h2>
-              <div className="metric-trend up">↑ 18.7% <span className="text">dari minggu lalu</span></div>
+              <h2>{stats?.totalUsers ?? 0}</h2>
+              <div className="metric-trend up">Terdaftar di DB</div>
             </div>
           </div>
           <div className="admin-metric-card-new">
             <div className="metric-icon-box purple"><FilePlus size={24} /></div>
             <div className="metric-details">
               <h3>Resep Baru</h3>
-              <h2>89</h2>
-              <div className="metric-trend up">↑ 15.1% <span className="text">dari minggu lalu</span></div>
+              <h2>{stats?.pendingRecipes ?? 0}</h2>
+              <div className="metric-trend up">Menunggu ACC</div>
             </div>
           </div>
           <div className="admin-metric-card-new">
             <div className="metric-icon-box red"><MessageCircle size={24} /></div>
             <div className="metric-details">
               <h3>Total Komentar</h3>
-              <h2>1.156</h2>
-              <div className="metric-trend up">↑ 9.3% <span className="text">dari minggu lalu</span></div>
+              <h2>{stats?.totalComments ?? 0}</h2>
+              <div className="metric-trend up">Terbaca di DB</div>
             </div>
           </div>
         </div>
@@ -133,7 +177,7 @@ const AdminDashboard = () => {
             </div>
             <div className="chart-container">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <AreaChart data={stats?.chartData || chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorResepBaru" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8B5E34" stopOpacity={0.1} />
@@ -158,23 +202,26 @@ const AdminDashboard = () => {
           <div className="admin-card">
             <div className="admin-card-header">
               <h2>Resep Menunggu Persetujuan</h2>
-              <Link to="#" className="admin-card-action">Lihat Semua</Link>
+              <Link to="/dashboard/admin/recipes" className="admin-card-action">Lihat Semua</Link>
             </div>
             <div className="approval-list">
-              {pendingRecipes.map((resep, idx) => (
-                <div className="approval-item" key={idx}>
-                  <img src={resep.image} alt={resep.title} />
-                  <div className="approval-info">
-                    <h4>{resep.title}</h4>
-                    <p>oleh {resep.author}</p>
-                    <span>{resep.time}</span>
+              {pendingRecipes.length > 0 ? (
+                pendingRecipes.map((resep, idx) => (
+                  <div className="approval-item" key={idx}>
+                    <img src={resep.image} alt={resep.title} />
+                    <div className="approval-info">
+                      <h4>{resep.title}</h4>
+                      <p>oleh {resep.author}</p>
+                    </div>
+                    <div className="approval-actions">
+                      <div className="approval-btn approve" onClick={() => handleApprove(resep.id)} style={{ cursor: 'pointer' }} title="Setujui"><Check size={16} /></div>
+                      <div className="approval-btn reject" onClick={() => handleReject(resep.id)} style={{ cursor: 'pointer' }} title="Tolak / Hapus"><X size={16} /></div>
+                    </div>
                   </div>
-                  <div className="approval-actions">
-                    <div className="approval-btn approve"><Check size={16} /></div>
-                    <div className="approval-btn reject"><X size={16} /></div>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-light)' }}>Tidak ada resep menunggu persetujuan.</div>
+              )}
             </div>
           </div>
         </div>
@@ -261,7 +308,7 @@ const AdminDashboard = () => {
           <div className="summary-card">
             <div className="summary-info">
               <h3>Kategori</h3>
-              <p>Total 24 Kategori</p>
+              <p>Total {stats?.totalCategories ?? 0} Kategori</p>
               <Link to="/dashboard/admin/categories" className="summary-link">Kelola Kategori</Link>
             </div>
             <div className="summary-icon"><LayoutGrid size={24} /></div>
@@ -269,24 +316,24 @@ const AdminDashboard = () => {
           <div className="summary-card">
             <div className="summary-info">
               <h3>Bahan</h3>
-              <p>Total 152 Bahan</p>
+              <p>Total {stats?.totalIngredients ?? 0} Bahan</p>
               <Link to="/dashboard/admin/ingredients" className="summary-link">Kelola Bahan</Link>
             </div>
             <div className="summary-icon" style={{ backgroundColor: '#FFF3E0', color: '#E65100' }}><ShoppingBag size={24} /></div>
           </div>
           <div className="summary-card">
             <div className="summary-info">
-              <h3>Pengguna Aktif</h3>
-              <p>2.341 pengguna</p>
+              <h3>Pengguna</h3>
+              <p>{stats?.totalUsers ?? 0} Pengguna</p>
               <Link to="/dashboard/admin/users" className="summary-link">Lihat Detail</Link>
             </div>
             <div className="summary-icon" style={{ backgroundColor: '#F3E5F5', color: '#6A1B9A' }}><Users size={24} /></div>
           </div>
           <div className="summary-card">
             <div className="summary-info">
-              <h3>Laporan</h3>
-              <p>Lihat laporan bulanan</p>
-              <Link to="/dashboard/admin/reports" className="summary-link">Buka Laporan</Link>
+              <h3>Artikel</h3>
+              <p>{stats?.totalArticles ?? 0} Artikel</p>
+              <Link to="/dashboard/admin/articles" className="summary-link">Kelola Artikel</Link>
             </div>
             <div className="summary-icon pink"><BarChart2 size={24} /></div>
           </div>

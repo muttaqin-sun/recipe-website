@@ -13,6 +13,8 @@ router.get('/admin/all', protect, authorizeAdmin, articleController.getAllArticl
 // User routes
 router.post('/', protect, upload.single('image'), articleController.createArticle);
 router.get('/user/me', protect, articleController.getUserArticles);
+router.get('/user/liked', protect, articleController.getUserLikedArticles);
+router.get('/user/commented', protect, articleController.getUserCommentedArticles);
 
 // Dynamic routes
 router.get('/:id', articleController.getArticleById);

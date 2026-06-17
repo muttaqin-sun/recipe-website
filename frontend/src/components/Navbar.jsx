@@ -90,9 +90,14 @@ const Navbar = () => {
 
           {/* User Account or Dashboard Action */}
           {!user ? (
-            <Link to="/login" className="login-btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 20px', border: '1px solid var(--text-dark)', borderRadius: '100px', fontWeight: '600', color: 'var(--text-dark)', textDecoration: 'none', transition: 'all 0.3s' }}>
-              <User size={18} /> Login
-            </Link>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Link to="/login" className="login-btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 20px', border: '1px solid var(--text-dark)', borderRadius: '100px', fontWeight: '600', color: 'var(--text-dark)', textDecoration: 'none', transition: 'all 0.3s' }}>
+                <User size={18} /> Login
+              </Link>
+              <Link to="/daftar" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 20px', background: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '100px', fontWeight: '600', color: 'white', textDecoration: 'none', transition: 'all 0.3s' }}>
+                Daftar
+              </Link>
+            </div>
           ) : (
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <Link to={user.role === 'admin' ? "/dashboard/admin" : "/dashboard/user"} className="user-icon" style={{ textDecoration: 'none', background: 'var(--text-dark)' }}>

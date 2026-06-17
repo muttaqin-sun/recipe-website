@@ -15,7 +15,10 @@ CREATE TABLE IF NOT EXISTS users (
   password TEXT NOT NULL,
   role TEXT DEFAULT 'user',
   avatar TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  bio TEXT DEFAULT '',
+  location TEXT DEFAULT '',
+  instagram TEXT DEFAULT '',
+  created_at TIMESTAMP DEFAULT (datetime('now', '+7 hours'))
 );
 
 CREATE TABLE IF NOT EXISTS recipes (
@@ -34,7 +37,7 @@ CREATE TABLE IF NOT EXISTS recipes (
   rating DECIMAL(2,1) DEFAULT 0,
   description TEXT,
   status TEXT DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT (datetime('now', '+7 hours')),
   FOREIGN KEY (author_id) REFERENCES users(id)
 );
 
@@ -62,7 +65,7 @@ CREATE TABLE IF NOT EXISTS articles (
   image TEXT,
   date DATE,
   status TEXT DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT (datetime('now', '+7 hours')),
   FOREIGN KEY (author_id) REFERENCES users(id)
 );
 
@@ -70,7 +73,7 @@ CREATE TABLE IF NOT EXISTS recipe_likes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
   recipe_id INTEGER NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT (datetime('now', '+7 hours')),
   UNIQUE (user_id, recipe_id),
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (recipe_id) REFERENCES recipes(id)
@@ -81,7 +84,7 @@ CREATE TABLE IF NOT EXISTS recipe_comments (
   user_id INTEGER NOT NULL,
   recipe_id INTEGER NOT NULL,
   content TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT (datetime('now', '+7 hours')),
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (recipe_id) REFERENCES recipes(id)
 );
@@ -90,7 +93,7 @@ CREATE TABLE IF NOT EXISTS article_likes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
   article_id INTEGER NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT (datetime('now', '+7 hours')),
   UNIQUE (user_id, article_id),
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (article_id) REFERENCES articles(id)
@@ -101,7 +104,7 @@ CREATE TABLE IF NOT EXISTS article_comments (
   user_id INTEGER NOT NULL,
   article_id INTEGER NOT NULL,
   content TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT (datetime('now', '+7 hours')),
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (article_id) REFERENCES articles(id)
 );
@@ -110,7 +113,7 @@ CREATE TABLE IF NOT EXISTS saved_recipes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
   recipe_id INTEGER NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT (datetime('now', '+7 hours')),
   UNIQUE (user_id, recipe_id),
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (recipe_id) REFERENCES recipes(id)
